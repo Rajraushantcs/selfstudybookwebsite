@@ -1,0 +1,39 @@
+name: Check Code and HTML Validator
+
+# Yeh workflow tab chalega jab aap koi code push ya Pull Request karenge
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  validate-code:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Code checkout
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # 2. Basic Syntax and HTML Validation Check
+    - name: Validate HTML files
+      run: |
+        echo "Starting HTML and Code syntax checks..."
+        
+        # Check if index.html exists
+        if [ ! -f "index.html" ]; then
+          echo "ERROR: index.html missing hai!"
+          exit 1
+        fi
+        
+        # Simple HTML tag validator check (Checks for broken syntax)
+        for file in *.html; do
+          if [ -f "$file" ]; then
+            echo "Checking $file..."
+            # Check for missing closing tags or severe structural errors
+            grep -q -i "</html>" "$file" || { echo "ERROR: $file me </html> tag missing hai!"; exit 1; }
+          fi
+        done
+        
+        echo "All files passed basic checks successfully!"
