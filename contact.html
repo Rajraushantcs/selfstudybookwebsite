@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - SelfStudyBook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+
+    <header class="bg-indigo-600 text-white shadow-md py-6">
+        <div class="max-w-4xl mx-auto px-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold tracking-tight">SelfStudyBook<span class="text-yellow-300">.com</span></a>
+            
+            <!-- Back & Home Buttons -->
+            <div class="flex items-center gap-3">
+                <button onclick="history.back()" class="text-sm bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-lg transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-arrow-left"></i> Back
+                </button>
+                <a href="index.html" class="text-sm bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-lg transition flex items-center gap-2">
+                    <i class="fa-solid fa-house"></i> Home
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-10 my-6 bg-white shadow-xl rounded-2xl border border-slate-100 flex-grow">
+        
+        <div class="border-b border-slate-200 pb-4 mb-6">
+            <h1 class="text-3xl font-extrabold text-indigo-900 flex items-center gap-3">
+                <i class="fa-solid fa-headset text-indigo-600"></i> Contact Support
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">We are here to help BSEB students with any test series or payment query.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            
+            <div class="p-6 bg-slate-900 text-white rounded-xl shadow-md space-y-4">
+                <h3 class="text-xl font-bold text-yellow-400 border-b border-slate-700 pb-2">Official Info</h3>
+                
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-user-tie text-indigo-400 mt-1"></i>
+                    <div>
+                        <p class="text-xs text-slate-400">Publisher & Founder</p>
+                        <p class="font-semibold">Raj Raushan Sir</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-envelope text-indigo-400 mt-1"></i>
+                    <div>
+                        <p class="text-xs text-slate-400">Email Address</p>
+                        <a href="mailto:rajraushan.tcs@gmail.com" class="font-semibold text-indigo-300 underline">selfstudybookofficials@gmail.com</a>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-phone text-indigo-400 mt-1"></i>
+                    <div>
+                        <p class="text-xs text-slate-400">Helpline / WhatsApp</p>
+                        <p class="font-semibold">+91 9128919447</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-location-dot text-indigo-400 mt-1"></i>
+                    <div>
+                        <p class="text-xs text-slate-400">Operating Address</p>
+                        <p class="font-semibold text-sm">SelfStudyBook Publication, Patna, Bihar - 800013, India</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 bg-indigo-50 rounded-xl border border-indigo-100 flex flex-col justify-center">
+                <h4 class="text-lg font-bold text-indigo-900 mb-2">Support Working Hours</h4>
+                <p class="text-sm text-slate-600 mb-4">You can reach out to us during all hours for quick query resolution.</p>
+                <div class="bg-white p-4 rounded-lg border border-slate-200 text-sm space-y-2">
+                    <p class="flex justify-between"><span>Days:</span> <strong class="text-slate-800">Monday - Sunday</strong></p>
+                    <p class="flex justify-between"><span>Timing:</span> <strong class="text-slate-800">9:00 AM - 9:00 PM</strong></p>
+                    <p class="flex justify-between"><span>Response Time:</span> <strong class="text-green-600">Within 24 Hours</strong></p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-6 text-sm">
+        <p>© 2026 SelfStudyBook.com | All Rights Reserved</p>
+    </footer>
+
+</body>
+</html>
