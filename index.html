@@ -1,31 +1,27 @@
 <!DOCTYPE html>
 <html lang="hi">
+
+<!-- ==========================================
+     SECTION 1: HEAD & SEO META TAGS
+========================================== -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- ========================================== -->
-    <!-- SEO & META TAGS START                      -->
-    <!-- ========================================== -->
-    <!-- 1. Primary Title Tag (Hindi + Hinglish Mix for Max CTR) -->
+    <!-- SEO & Meta Tags -->
     <title>Self Study Book: Bihar Board Class 9th & 10th Guide Books, PYQ & Model Paper | बिहार बोर्ड स्पेशल</title>
-    
-    <!-- 2. Meta Description (High CTR & Actionable) -->
     <meta name="description" content="Self Study Book (Selfstudybook.com) पर पाएं Bihar Board 9th & 10th की Best Guide Books, Previous Year Questions (PYQ) और Free Model Sets by Raj Raushan Sir. अभी ऑर्डर करें!">
-    
-    <!-- 3. Target Keywords (Search Engine Optimized) -->
-    <meta name="keywords" content="selfstudybook, self study book, selfstudy book, self study, bihar board class 10 guide book, bseb class 9th books, bihar board previous year question paper, bseb model paper, raj raushan sir, selfstudybook com">
+    <meta name="keywords" content="selfstudybook, self study book, bihar board class 10 guide book, bseb class 9th books, bihar board previous year question paper, bseb model paper, raj raushan sir">
     <meta name="author" content="Raj Raushan">
     <meta name="robots" content="index, follow, max-image-preview:large">
 
-    <!-- 4. Canonical Tag -->
     <link rel="canonical" href="https://selfstudybook.com/">
 
-    <!-- 5. Open Graph Tags (WhatsApp, Facebook Sharing) -->
+    <!-- Open Graph Tags -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://selfstudybook.com/">
     <meta property="og:title" content="Self Study Book | Bihar Board Class 9th & 10th Best Guide Books & PYQ">
-    <meta property="og:description" content="बिहार बोर्ड 9वीं और 10वीं की बेस्ट गाइड बुक्स, पिछले वर्षों के प्रश्न (PYQ) और फ्री मॉडल सेट्स डाउनलोड करें। बाय राज रौशन सर।">
+    <meta property="og:description" content="बिहार बोर्ड 9वीं और 10वीं की बेस्ट गाइड बुक्स, पिछले वर्षों के प्रश्न (PYQ) और फ्री मॉडल सेट्स डाउनलोड करें।">
     <meta property="og:image" content="https://selfstudybook.com/images/selfstudy_10.webp">
 
     <!-- Twitter Card -->
@@ -33,7 +29,7 @@
     <meta name="twitter:title" content="Self Study Book | BSEB Class 9th & 10th Material">
     <meta name="twitter:description" content="Free Study Notes, Books and Question Papers by Raj Raushan Sir.">
 
-    <!-- 6. Schema.org Structured Data (Google Ranking Boost Engine) -->
+    <!-- Schema.org -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -48,9 +44,6 @@
       "description": "Best Guide books and Free Model Sets for Bihar Board Class 9th & 10th students."
     }
     </script>
-    <!-- ========================================== -->
-    <!-- SEO & META TAGS END                        -->
-    <!-- ========================================== -->
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -74,21 +67,19 @@
     <!-- External Custom CSS -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- Lucide Icons -->
+    <!-- Lucide & FontAwesome Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body class="bg-creamBg text-textMain min-h-screen pb-24 font-sans antialiased">
 
-    <!-- ========================================== -->
-    <!-- 1. TOP HEADER SECTION START                -->
-    <!-- ========================================== -->
+    <!-- ==========================================
+         SECTION 2: TOP NAVIGATION HEADER
+    ========================================== -->
     <header class="sticky top-0 z-50 bg-white border-b border-rose-100 px-4 py-3 flex items-center justify-between shadow-sm">
-        
-        <!-- Logo & Website Name -->
         <div class="flex items-center space-x-2.5">
             <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-crimson to-softPink flex items-center justify-center text-white shadow-md shadow-rose-200">
-                <!-- Attractive Book Icon -->
                 <i data-lucide="book-open-check" class="w-5 h-5"></i>
             </div>
             <div>
@@ -99,88 +90,61 @@
             </div>
         </div>
         
-        <!-- WhatsApp Direct Chat Link -->
         <a href="https://wa.me/919128919447?text=Hi%20Raj%20Sir,%20I%20have%20a%20query" 
            target="_blank" 
            data-action="whatsapp-direct" 
            class="flex items-center space-x-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-full font-extrabold shadow-sm active:scale-95 transition-transform">
-            <!-- WhatsApp Icon -->
             <i data-lucide="message-circle" class="w-4 h-4 fill-current"></i>
             <span>WhatsApp</span>
         </a>
     </header>
-    
-    <!-- ========================================== -->
-    <!-- TOP HEADER SECTION END                     -->
-    <!-- ========================================== -->
 
-
-   <!-- ========================================== -->
-    <!-- 2. QUICK ACTION RIBBON BAR START (FIXED)   -->
-    <!-- ========================================== -->
+    <!-- ==========================================
+         SECTION 3: QUICK ACTION RIBBON BAR (Synced Actions)
+    ========================================== -->
     <div class="sticky top-[61px] z-40 bg-gradient-to-r from-crimson via-rose-800 to-crimson text-white px-3 py-2 shadow-md border-b border-rose-900">
         <div class="max-w-md mx-auto flex items-center justify-between text-xs font-bold px-1">
-            
-            <!-- Menu Button -->
             <button data-action="toggle-menu" class="flex items-center space-x-1 hover:text-rose-200 active:scale-95 transition-transform">
                 <i data-lucide="menu" class="w-4 h-4"></i>
                 <span>MENU</span>
             </button>
-
             <span class="text-rose-400/60">|</span>
-
-            <!-- Test Section -->
-            <button data-action="quick-test" class="flex items-center space-x-1 hover:text-rose-200 active:scale-95 transition-transform">
+            <button data-action="quick-model-sets" class="flex items-center space-x-1 hover:text-rose-200 active:scale-95 transition-transform">
                 <i data-lucide="award" class="w-4 h-4"></i>
                 <span>MODEL SETS</span>
             </button>
-
             <span class="text-rose-400/60">|</span>
-
-            <!-- E-Books Section -->
-            <button data-action="quick-ebooks" class="flex items-center space-x-1 hover:text-rose-200 active:scale-95 transition-transform">
-                <i data-lucide="book-open" class="w-4 h-4"></i>
-                <span>E-BOOKS</span>
+            <button data-action="quick-tests" class="flex items-center space-x-1 hover:text-rose-200 active:scale-95 transition-transform">
+                <i data-lucide="check-square" class="w-4 h-4"></i>
+                <span>LIVE TEST</span>
             </button>
-
             <span class="text-rose-400/60">|</span>
-
-            <!-- Notes Section -->
-            <button data-action="quick-notes" class="flex items-center space-x-1 hover:text-rose-200 active:scale-95 transition-transform">
-                <i data-lucide="file-text" class="w-4 h-4"></i>
-                <span>NOTES</span>
+            <button data-action="quick-pyq" class="flex items-center space-x-1 hover:text-rose-200 active:scale-95 transition-transform">
+                <i data-lucide="file-question" class="w-4 h-4"></i>
+                <span>PYQ</span>
             </button>
-
         </div>
     </div>
-    <!-- ========================================== -->
-    <!-- QUICK ACTION RIBBON BAR END                -->
-    <!-- ========================================== -->
 
-
+    <!-- MAIN CONTAINER -->
     <main class="max-w-md mx-auto p-4 space-y-6">
 
-        <!-- ========================================== -->
-        <!-- 3. MAIN HERO CONTENT SECTION START         -->
-        <!-- ========================================== -->
+        <!-- ==========================================
+             SECTION 4: HERO BANNER & INTRO
+        ========================================== -->
         <section class="relative bg-gradient-to-b from-white via-softPinkBg/60 to-rose-50/80 rounded-3xl p-6 border border-rose-100 shadow-sm text-center overflow-hidden">
-            
-            <!-- Dynamic Background Glow -->
             <div class="absolute -top-10 -left-10 w-32 h-32 bg-rose-200/50 rounded-full blur-2xl pointer-events-none"></div>
 
-            <!-- Session Badge -->
             <div class="inline-flex items-center space-x-1 bg-crimson text-white text-[10px] font-black px-3.5 py-1 rounded-full uppercase tracking-widest shadow-sm mb-4">
                 <i data-lucide="sparkles" class="w-3 h-3 text-rose-200"></i>
                 <span>SESSION 2026-27 ★ TARGET BOARD EXAM</span>
             </div>
 
-            <!-- Main Big Title -->
             <h2 class="text-2xl font-black text-slate-900 leading-tight tracking-tight">
                 सही किताब, सही तैयारी,<br>
                 <span class="bg-gradient-to-r from-crimson to-softPink bg-clip-text text-transparent">बेहतर भविष्य!</span>
             </h2>
 
-            <!-- Designer Dynamic Author Typography -->
             <div class="mt-4 pt-3 border-t border-rose-200/60 inline-block px-6">
                 <p class="text-xs uppercase font-extrabold tracking-widest text-slate-400">Designed & Developed by</p>
                 <p class="text-base font-black text-crimson tracking-wide flex items-center justify-center space-x-1 mt-0.5">
@@ -190,30 +154,17 @@
                 <p class="text-[10px] text-slate-500 font-bold mt-0.5">(System Engineer • Teacher • Student's Friend & Motivator)</p>
             </div>
 
-            <!-- Main Action Buttons Below Hero Banner -->
-            <div class="mt-6 grid grid-cols-2 gap-3 pt-2">
-                <!-- Button 1: Order Books -->
-                <button data-action="open-order-books-page" class="bg-crimson hover:bg-rose-900 text-white p-3 rounded-2xl font-black text-xs flex items-center justify-center space-x-2 shadow-md shadow-rose-200 active:scale-95 transition-transform border border-rose-800">
-                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                    <span>ORDER BOOKS</span>
+            <div class="mt-6 pt-2 flex justify-center">
+                <button data-action="open-chapterwise-practice" class="w-full max-w-xs bg-crimson hover:bg-rose-900 text-white p-3.5 rounded-2xl font-black text-xs flex items-center justify-center space-x-2 shadow-md shadow-rose-200 active:scale-95 transition-transform border border-rose-800">
+                    <i data-lucide="play-circle" class="w-5 h-5"></i>
+                    <span>ऑनलाइन प्रैक्टिस करें</span>
                 </button>
-
-                <!-- Button 2: PYQ Downloads -->
-                               <a href="https://storage.googleapis.com/selfstudybook-pdfs/PYQ/science_10_2025.pdf" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-rose-50 text-slate-800 p-3 rounded-2xl font-black text-xs flex items-center justify-center space-x-2 border border-rose-200 shadow-sm active:scale-95 transition-transform">
-                     <i data-lucide="download-cloud" class="w-4 h-4 text-softPink"></i>
-                     <span>PYQ DOWNLOAD</span>
-                 </a>
             </div>
-
         </section>
-        <!-- ========================================== -->
-        <!-- MAIN HERO CONTENT SECTION END              -->
-        <!-- ========================================== -->
 
-
-        <!-- ========================================== -->
-        <!-- 4. FEATURED BOOKS SECTION START            -->
-        <!-- ========================================== -->
+        <!-- ==========================================
+             SECTION 5: FEATURED BOOKS LIST
+        ========================================== -->
         <section class="space-y-3" id="books-section">
             <div class="flex items-center justify-between">
                 <h3 class="text-sm font-extrabold text-slate-900 flex items-center space-x-2">
@@ -222,26 +173,21 @@
                 </h3>
             </div>
 
-            <!-- Book Cards List -->
             <div id="books-list" class="space-y-3">
-                
-                <!-- Book Item 1 (Class 10th) -->
+                <!-- Class 10 Book Card -->
                 <div class="bg-white p-3.5 rounded-2xl border border-rose-100 flex space-x-3.5 items-center shadow-sm">
                     <div class="w-20 h-28 bg-slate-100 rounded-xl flex-none overflow-hidden border border-slate-200 shadow-sm flex items-center justify-center">
                        <img src="images/selfstudy_10.webp" alt="Class 10th Book" class="w-full h-full object-contain bg-slate-900">
                     </div>
-                    
                     <div class="flex-1 min-w-0 space-y-1">
                         <span class="bg-softPinkBg text-crimson text-xs font-black px-2.5 py-0.5 rounded-full inline-block">CLASS 10th</span>
                         <h4 class="text-xs font-bold text-slate-900 truncate">Objective Complete Study + Revision</h4>
                         <p class="text-[10px] text-slate-500">1st Book as Topicwise • OMR Sheet • PYQs</p>
-                        
                         <div class="flex items-center pt-2">
                             <button data-action="coming-soon" class="bg-rose-50 hover:bg-rose-100 text-crimson border border-rose-200 px-3 py-1.5 rounded-xl text-[10px] font-black active:scale-95 transition-transform flex items-center space-x-1">
                                 <i data-lucide="eye" class="w-3.5 h-3.5"></i>
                                 <span>VIEW SAMPLE</span>
                             </button>
-
                             <button data-action="buy-book" data-book-id="10" class="ml-auto bg-crimson hover:bg-rose-900 text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black active:scale-95 transition-transform shadow-sm flex items-center space-x-1">
                                 <i data-lucide="shopping-cart" class="w-3 h-3"></i>
                                 <span>ऑर्डर करें</span>
@@ -250,23 +196,20 @@
                     </div>
                 </div>
 
-                <!-- Book Item 2 (Class 9th) -->
+                <!-- Class 9 Book Card -->
                 <div class="bg-white p-3.5 rounded-2xl border border-rose-100 flex space-x-3.5 items-center shadow-sm">
                     <div class="w-20 h-28 bg-slate-100 rounded-xl flex-none overflow-hidden border border-slate-200 shadow-sm flex items-center justify-center">
                         <img src="images/selfstudy_9.webp" alt="Class 9th Book" class="w-full h-full object-contain bg-slate-900">
                     </div>
-                    
                     <div class="flex-1 min-w-0 space-y-1">
                         <span class="bg-sky-50 text-accentBlue text-xs font-black px-2.5 py-0.5 rounded-full inline-block">CLASS 9th</span>
                         <h4 class="text-xs font-bold text-slate-900 truncate">SelfStudy Book Objective + Subjective</h4>
                         <p class="text-[10px] text-slate-500">Chapter-Wise V.V.I Questions & Solutions</p>
-                        
                         <div class="flex items-center pt-2">
                             <button data-action="coming-soon" class="bg-sky-50 hover:bg-sky-100 text-accentBlue border border-sky-200 px-3 py-1.5 rounded-xl text-[10px] font-black active:scale-95 transition-transform flex items-center space-x-1">
                                 <i data-lucide="eye" class="w-3.5 h-3.5"></i>
                                 <span>VIEW SAMPLE</span>
                             </button>
-
                             <button data-action="buy-book" data-book-id="9" class="ml-auto bg-crimson hover:bg-rose-900 text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black active:scale-95 transition-transform shadow-sm flex items-center space-x-1">
                                 <i data-lucide="shopping-cart" class="w-3 h-3"></i>
                                 <span>ऑर्डर करें</span>
@@ -275,23 +218,20 @@
                     </div>
                 </div>
 
-                <!-- Book Item 3 (मनोरंजन सामान्य ज्ञान) -->
+                <!-- GK Book Card -->
                 <div class="bg-white p-3.5 rounded-2xl border border-rose-100 flex space-x-3.5 items-center shadow-sm">
                     <div class="w-20 h-28 bg-slate-100 rounded-xl flex-none overflow-hidden border border-slate-200 shadow-sm flex items-center justify-center">
                         <img src="images/manoranjan_gk.webp" alt="मनोरंजन सामान्य ज्ञान" class="w-full h-full object-contain bg-slate-900">
                     </div>
-                    
                     <div class="flex-1 min-w-0 space-y-1">
                         <span class="bg-amber-50 text-amber-700 text-xs font-black px-2.5 py-0.5 rounded-full inline-block">for Class 6 to 10</span>
                         <h4 class="text-xs font-bold text-slate-900 truncate">मनोरंजन सामान्य ज्ञान</h4>
                         <p class="text-[10px] text-slate-500">Tips and Tricks Books, Jokes, 10 in 1</p>
-                        
                         <div class="flex items-center pt-2">
                             <button data-action="coming-soon" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-xl text-[10px] font-black active:scale-95 transition-transform flex items-center space-x-1">
                                 <i data-lucide="eye" class="w-3.5 h-3.5"></i>
                                 <span>VIEW SAMPLE</span>
                             </button>
-
                             <button data-action="buy-book" data-book-id="gk" class="ml-auto bg-crimson hover:bg-rose-900 text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black active:scale-95 transition-transform shadow-sm flex items-center space-x-1">
                                 <i data-lucide="shopping-cart" class="w-3 h-3"></i>
                                 <span>ऑर्डर करें</span>
@@ -299,109 +239,52 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
-        <!-- ========================================== -->
-        <!-- FEATURED BOOKS SECTION END                 -->
-        <!-- ========================================== -->
 
-
-        <!-- ========================================== -->
-        <!-- 5. PYQ SECTION (6 SUBJECTS COMPLETE)       -->
-        <!-- ========================================== -->
-        <section class="space-y-3" id="pyq-section">
+        <!-- ==========================================
+             SECTION 6: MODEL SETS & LIVE TESTS
+        ========================================== -->
+        <section class="space-y-3" id="model-sets-section">
             <div class="flex items-center justify-between">
                 <h3 class="text-sm font-extrabold text-slate-900 flex items-center space-x-2">
-                    <i data-lucide="file-question" class="w-4 h-4 text-accentBlue"></i>
-                    <span>Previous Year Question Papers (All Subjects)</span>
+                    <i data-lucide="award" class="w-4 h-4 text-crimson"></i>
+                    <span>Model Sets & Live Mock Tests</span>
                 </h3>
             </div>
 
-            <div class="grid grid-cols-1 gap-2.5">
-                
-                <!-- 1. Science -->
-                <div class="bg-white p-3 rounded-xl border border-rose-100 flex items-center justify-between shadow-sm">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">01</div>
-                        <div>
-                            <h4 class="text-xs font-bold text-slate-800">विज्ञान (Science)</h4>
-                            <p class="text-[9px] text-slate-500">PYQ 2026 </p>
-                        </div>
+            <div class="bg-white p-3.5 rounded-2xl border border-rose-100 flex items-center justify-between shadow-sm">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-rose-50 text-crimson flex items-center justify-center font-black text-xs">01</div>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-800">BSEB 9th Maths Model Set 1</h4>
+                        <p class="text-[9px] text-slate-500 font-bold">25 Questions • 30 Mins • Live Test</p>
                     </div>
-                    <button data-action="coming-soon" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-lg text-[10px] font-black active:scale-95 transition-transform">डाउनलोड</button>
                 </div>
+                <button data-action="open-9th-math-test" class="bg-crimson hover:bg-rose-900 text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black active:scale-95 transition-transform shadow-sm flex items-center space-x-1">
+                    <i data-lucide="play" class="w-3 h-3 fill-current"></i>
+                    <span>Start Test</span>
+                </button>
+            </div>
 
-                <!-- 2. Mathematics -->
-                <div class="bg-white p-3 rounded-xl border border-rose-100 flex items-center justify-between shadow-sm">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-sky-50 text-accentBlue flex items-center justify-center font-bold text-xs">02</div>
-                        <div>
-                            <h4 class="text-xs font-bold text-slate-800">गणित (Mathematics)</h4>
-                            <p class="text-[9px] text-slate-500">PYQ 2026 </p>
-                        </div>
+            <div class="bg-white p-3.5 rounded-2xl border border-rose-100 flex items-center justify-between shadow-sm">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-sky-50 text-accentBlue flex items-center justify-center font-black text-xs">02</div>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-800">BSEB 10th Maths Model Set 1</h4>
+                        <p class="text-[9px] text-slate-500 font-bold">50 Questions • 45 Mins • Live Test</p>
                     </div>
-                    <button data-action="coming-soon" class="bg-sky-50 text-accentBlue border border-sky-200 px-3 py-1 rounded-lg text-[10px] font-black active:scale-95 transition-transform">डाउनलोड</button>
                 </div>
-
-                <!-- 3. Social Science -->
-                <div class="bg-white p-3 rounded-xl border border-rose-100 flex items-center justify-between shadow-sm">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xs">03</div>
-                        <div>
-                            <h4 class="text-xs font-bold text-slate-800">सामाजिक विज्ञान (Social Science)</h4>
-                            <p class="text-[9px] text-slate-500">PYQ 2026 </p>
-                        </div>
-                    </div>
-                    <button data-action="coming-soon" class="bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-lg text-[10px] font-black active:scale-95 transition-transform">डाउनलोड</button>
-                </div>
-
-                <!-- 4. Hindi -->
-                <div class="bg-white p-3 rounded-xl border border-rose-100 flex items-center justify-between shadow-sm">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-rose-50 text-crimson flex items-center justify-center font-bold text-xs">04</div>
-                        <div>
-                            <h4 class="text-xs font-bold text-slate-800">हिंदी (Hindi)</h4>
-                            <p class="text-[9px] text-slate-500">PYQ 2026 </p>
-                        </div>
-                    </div>
-                    <button data-action="coming-soon" class="bg-rose-50 text-crimson border border-rose-200 px-3 py-1 rounded-lg text-[10px] font-black active:scale-95 transition-transform">डाउनलोड</button>
-                </div>
-
-                <!-- 5. Sanskrit -->
-                <div class="bg-white p-3 rounded-xl border border-rose-100 flex items-center justify-between shadow-sm">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xs">05</div>
-                        <div>
-                            <h4 class="text-xs font-bold text-slate-800">संस्कृत (Sanskrit)</h4>
-                            <p class="text-[9px] text-slate-500">PYQ 2026 </p>
-                        </div>
-                    </div>
-                    <button data-action="coming-soon" class="bg-purple-50 text-purple-700 border border-purple-200 px-3 py-1 rounded-lg text-[10px] font-black active:scale-95 transition-transform">डाउनलोड</button>
-                </div>
-
-                <!-- 6. English -->
-                <div class="bg-white p-3 rounded-xl border border-rose-100 flex items-center justify-between shadow-sm">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs">06</div>
-                        <div>
-                            <h4 class="text-xs font-bold text-slate-800">अंग्रेजी (English)</h4>
-                            <p class="text-[9px] text-slate-500">PYQ 2026 </p>
-                        </div>
-                    </div>
-                    <button data-action="coming-soon" class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded-lg text-[10px] font-black active:scale-95 transition-transform">डाउनलोड</button>
-                </div>
-
+                <button data-action="coming-soon" class="bg-accentBlue hover:bg-sky-700 text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black active:scale-95 transition-transform shadow-sm flex items-center space-x-1">
+                    <i data-lucide="play" class="w-3 h-3 fill-current"></i>
+                    <span>Start Test</span>
+                </button>
             </div>
         </section>
-        <!-- ========================================== -->
-        <!-- PYQ SECTION END                            -->
-        <!-- ========================================== -->
 
-
-        <!-- ========================================== -->
-        <!-- 7. OUR YOUTUBE VIDEOS SECTION              -->
-        <!-- ========================================== -->
+        <!-- ==========================================
+             SECTION 8: YOUTUBE VIDEOS EMBED
+        ========================================== -->
         <section class="space-y-3.5" id="youtube-section">
             <div class="flex items-center justify-between">
                 <h3 class="text-sm font-extrabold text-slate-900 flex items-center space-x-2">
@@ -411,7 +294,6 @@
                 <span class="text-[10px] text-slate-500 font-bold">SelfStudy Book 2026-27</span>
             </div>
 
-            <!-- Video Card 1 -->
             <div class="bg-white rounded-2xl border border-rose-100 overflow-hidden shadow-sm">
                 <div class="relative aspect-video bg-slate-900 group">
                     <img src="https://img.youtube.com/vi/KksXwS3eGcs/hqdefault.jpg" alt="Video 1 Thumbnail" class="w-full h-full object-cover">
@@ -438,96 +320,65 @@
                     </div>
                 </div>
             </div>
-
-            
-
         </section>
 
-       
     </main>
 
+    <!-- ==========================================
+         SECTION 9: FOOTER LINKS & INFORMATION (UPDATED 2x2 GRID FOR LINKS)
+    ========================================== -->
+    <footer class="bg-slate-900 text-slate-300 pt-8 pb-3 border-t-2 border-indigo-500">
+      <div class="max-w-5xl mx-auto px-4 text-center">
+        
+        <div class="space-y-3 pb-6 border-b border-slate-800">
+          <div class="flex items-center justify-center gap-2">
+            <div class="bg-indigo-600 text-white p-2 rounded-lg inline-flex items-center justify-center">
+              <i class="fa-solid fa-book-open text-lg"></i>
+            </div>
+            <span class="text-2xl font-bold text-white tracking-wide">SelfStudyBook <span class="text-indigo-400">Publication</span></span>
+          </div>
 
-    <!-- ========================================== -->
-    <!-- FORMAL WEBSITE FOOTER (ABOUT PUBLISHER)    -->
-    <!-- ========================================== -->
-    <!-- Fully Optimized Compact Footer -->
-<!-- Beautiful, High-Visibility Clickable Footer -->
-<footer class="bg-slate-900 text-slate-300 pt-8 pb-3 border-t-2 border-indigo-500">
-  <div class="max-w-5xl mx-auto px-4 text-center">
-    
-    <!-- Top Branding & Info -->
-    <div class="space-y-3 pb-6 border-b border-slate-800">
-      <div class="flex items-center justify-center gap-2">
-        <div class="bg-indigo-600 text-white p-2 rounded-lg inline-flex items-center justify-center">
-          <i class="fa-solid fa-book-open text-lg"></i>
+          <p class="text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            Founded & run by <strong class="text-white">Raj Raushan Sir</strong>. Providing high-quality study materials & guidebooks for BSEB Class 9th & 10th students.
+          </p>
+
+          <div class="text-xs text-slate-400 flex flex-wrap justify-center gap-4 pt-1">
+            <span><i class="fa-solid fa-phone text-indigo-400 mr-1"></i> Helpline: <strong class="text-white">+91 9128919447</strong></span>
+            <span>•</span>
+            <span><i class="fa-solid fa-location-dot text-indigo-400 mr-1"></i> Patna, Bihar, India</span>
+          </div>
         </div>
-        <span class="text-2xl font-bold text-white tracking-wide">SelfStudyBook <span class="text-indigo-400">Publication</span></span>
+
+        <!-- Links in 2x2 Grid Layout for perfect Mobile Responsiveness -->
+        <div class="py-5">
+          <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-4">Important Website Links</p>
+          <div class="grid grid-cols-2 gap-3 max-w-sm mx-auto text-sm sm:text-base font-bold">
+            <a href="privacy.html" class="bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 text-blue-400 hover:text-cyan-300 py-2 px-3 rounded-xl transition transform active:scale-95 flex items-center justify-center">Privacy Policy</a>
+            <a href="terms.html" class="bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 text-blue-400 hover:text-cyan-300 py-2 px-3 rounded-xl transition transform active:scale-95 flex items-center justify-center">Terms & Conditions</a>
+            <a href="refund.html" class="bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 text-blue-400 hover:text-cyan-300 py-2 px-3 rounded-xl transition transform active:scale-95 flex items-center justify-center">Refund Policy</a>
+            <a href="contact.html" class="bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 text-blue-400 hover:text-cyan-300 py-2 px-3 rounded-xl transition transform active:scale-95 flex items-center justify-center">Contact Us</a>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800/60 text-xs text-slate-500">
+          <p>© 2026 <strong class="text-slate-400 font-medium">SelfStudyBook.com</strong>. All Rights Reserved.</p>
+        </div>
       </div>
+    </footer>
 
-      <p class="text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
-        Founded & run  by <strong class="text-white">Raj Raushan Sir</strong>. Providing high-quality study materials & guidebooks for BSEB Class 9th & 10th students.
-      </p>
-
-      <div class="text-xs text-slate-400 flex flex-wrap justify-center gap-4 pt-1">
-        <span><i class="fa-solid fa-phone text-indigo-400 mr-1"></i> Helpline: <strong class="text-white">+91 9128919447</strong></span>
-        <span>•</span>
-        <span><i class="fa-solid fa-location-dot text-indigo-400 mr-1"></i> Patna, Bihar, India</span>
-      </div>
-    </div>
-
-    <!-- Prominent Clickable Links Section -->
-    <div class="py-5">
-      <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-3">Important Website Links</p>
-      
-      <!-- Big Blue Underlined Links -->
-      <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 text-base sm:text-lg font-bold">
-        <a href="privacy.html" class="text-blue-400 hover:text-cyan-300 underline underline-offset-4 decoration-2 transition hover:scale-105 transform inline-block">
-          Privacy Policy
-        </a>
-        <span class="text-slate-600 font-normal">|</span>
-        
-        <a href="terms.html" class="text-blue-400 hover:text-cyan-300 underline underline-offset-4 decoration-2 transition hover:scale-105 transform inline-block">
-          Terms & Conditions
-        </a>
-        <span class="text-slate-600 font-normal">|</span>
-        
-        <a href="refund.html" class="text-blue-400 hover:text-cyan-300 underline underline-offset-4 decoration-2 transition hover:scale-105 transform inline-block">
-          Refund Policy
-        </a>
-        <span class="text-slate-600 font-normal">|</span>
-        
-        <a href="contact.html" class="text-blue-400 hover:text-cyan-300 underline underline-offset-4 decoration-2 transition hover:scale-105 transform inline-block">
-          Contact Us
-        </a>
-      </div>
-    </div>
-
-    <!-- Bottom Single Copyright Line (Zero Extra Margin) -->
-    <div class="pt-3 border-t border-slate-800/60 text-xs text-slate-500">
-      <p>© 2026 <strong class="text-slate-400 font-medium">SelfStudyBook.com</strong>. All Rights Reserved.</p>
-    </div>
-
-  </div>
-</footer>
-    <!-- ========================================== -->
-    <!-- FORMAL WEBSITE FOOTER END                  -->
-    <!-- ========================================== -->
-
-
-    <!-- ========================================== -->
-    <!-- SIDE NAVIGATION MENU DRAWER                -->
-    <!-- ========================================== -->
+    <!-- ==========================================
+         SECTION 10: SIDE NAVIGATION DRAWER
+    ========================================== -->
     <div id="side-menu-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden transition-opacity duration-300">
         <div id="side-menu-content" class="w-72 max-w-[80%] bg-white h-full shadow-2xl flex flex-col justify-between p-4 transform -translate-x-full transition-transform duration-300">
             <div>
-                <!-- Menu Header -->
                 <div class="flex items-center justify-between pb-4 border-b border-rose-100">
                     <div class="flex items-center space-x-2">
                         <div class="w-8 h-8 rounded-lg bg-crimson text-white flex items-center justify-center font-bold">
                             <i data-lucide="user" class="w-4 h-4"></i>
                         </div>
                         <div>
-                            <h4 class="text-xs font-black text-slate-900">मेरा प्रोफ़ाइल </h4>
+                            <h4 class="text-xs font-black text-slate-900">मेरा प्रोफ़ाइल</h4>
                             <p class="text-[9px] text-slate-500 font-bold">BSEB Student</p>
                         </div>
                     </div>
@@ -536,7 +387,6 @@
                     </button>
                 </div>
 
-                <!-- Menu Items List -->
                 <nav class="mt-4 space-y-1">
                     <button class="menu-nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-extrabold text-slate-700 hover:bg-rose-50 hover:text-crimson transition-colors" data-page="profile">
                         <i data-lucide="user-check" class="w-4 h-4 text-rose-500"></i>
@@ -561,34 +411,29 @@
                 </nav>
             </div>
 
-            <!-- Footer in Menu -->
             <div class="pt-4 border-t border-rose-100 text-center">
                 <p class="text-[10px] text-slate-400 font-bold">SelfStudyBook v1.0.0</p>
             </div>
         </div>
     </div>
 
-
-    <!-- ========================================== -->
-    <!-- FULLSCREEN DYNAMIC VIEW MODAL CONTAINER    -->
-    <!-- ========================================== -->
+    <!-- ==========================================
+         SECTION 11: FULLSCREEN MODALS & TOASTS
+    ========================================== -->
     <div id="dynamic-view-modal" class="fixed inset-0 bg-creamBg z-50 hidden flex-col overflow-y-auto">
-        <!-- Dynamic Header -->
         <header class="sticky top-0 bg-white border-b border-rose-100 px-4 py-3 flex items-center justify-between shadow-sm z-10">
             <button id="close-view-btn" class="flex items-center space-x-1 text-slate-700 font-extrabold text-xs bg-slate-100 px-3 py-1.5 rounded-xl active:scale-95 transition-transform">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 <span>वापस जाएँ (Back)</span>
             </button>
             <h3 id="dynamic-view-title" class="font-extrabold text-sm text-crimson">Section Title</h3>
-            <div class="w-8"></div> <!-- Spacer for center alignment -->
+            <div class="w-8"></div>
         </header>
 
-        <!-- Dynamic Content Body -->
         <div id="dynamic-view-body" class="max-w-md mx-auto w-full p-4 space-y-4 flex-1">
             <!-- Content dynamically injected via JS -->
         </div>
     </div>
-
 
     <!-- Notification Toast Message -->
     <div id="toast-message" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl z-50 hidden transition-all duration-300 flex items-center space-x-2 border border-slate-700">
@@ -596,7 +441,7 @@
         <span id="toast-text">Message Notification</span>
     </div>
 
-    <!-- Dynamic JS -->
+    <!-- Script Import -->
     <script src="script.js"></script>
 </body>
 </html>
