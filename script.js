@@ -1,27 +1,63 @@
-// SelfStudyBook.com - Main Application JavaScript (Fixed & Updated)
-
 // ==========================================
-// 1. STORAGE KEYS & GLOBAL VARIABLES
+// SECTION 1: CONFIG, CONSTANTS & GLOBAL STATE
 // ==========================================
-const STORAGE_KEY_PROGRESS = "bseb_9th_math_set1_progress";
-const STORAGE_KEY_HISTORY = "bseb_9th_math_history";
+const API_ENDPOINTS = {
+    MATH_10TH: "DATA/10th/math/10th_maths_25_ques.json",
+    MATH_9TH: "DATA/9th/math/9th_maths_25_ques.json",
+    SCIENCE_9TH_CH1: "DATA/9th/science/ch1_ques.json"
+};
 
-// Global Stack Navigation & Timer Variables
-let modalHistory = [];
-let timerInterval = null;
-let timeRemaining = 30 * 60;
-let currentQuestionIndex = 0;
-let userAnswers = new Array(25).fill(null);
-let visitedQuestions = new Array(25).fill(false);
+const STORAGE_KEYS = {
+    PROGRESS_9TH: "bseb_9th_math_set1_progress",
+    PROGRESS_10TH: "bseb_10th_math_set1_progress"
+};
 
-// Direct PDF Download Link
 const SCIENCE_10_PDF_URL = "https://storage.googleapis.com/selfstudybook-pdfs/PYQ/science_10_2025.pdf";
 
-// State Variables for Interactive Test
+// Global App State Variables
+let modalHistory = [];
+
+// 9th Math State
+let testData9th = null;
+let currentQuestionIndex9th = 0;
+let userAnswers9th = [];
+let visitedQuestions9th = [];
+let timeRemaining9th = 30 * 60;
+let timerInterval9th = null;
+
+// 10th Math State
+let activeTestData10th = null;
+let currentQuestionIndex10th = 0;
+let userAnswers10th = [];
+let visitedQuestions10th = [];
+let timeRemaining10th = 30 * 60;
+let timerInterval10th = null;
+
+// 9th Science Ch-1 State
+let scienceCh1Data = null;
 let currentCh1Answers = new Array(20).fill(null);
 
+const class9ScienceChapters = [
+    { id: 1, name: "अध्याय 1: हमारे आस-पास के पदार्थ" },
+    { id: 2, name: "अध्याय 2: क्या हमारे आस-पास के पदार्थ शुद्ध हैं" },
+    { id: 3, name: "अध्याय 3: परमाणु एवं अणु" },
+    { id: 4, name: "अध्याय 4: परमाणु की संरचना" },
+    { id: 5, name: "अध्याय 5: जीवन की मौलिक इकाई" },
+    { id: 6, name: "अध्याय 6: ऊतक" },
+    { id: 7, name: "अध्याय 7: जीवों में विविधता" },
+    { id: 8, name: "अध्याय 8: गति" },
+    { id: 9, name: "अध्याय 9: बल तथा गति के नियम" },
+    { id: 10, name: "अध्याय 10: गुरुत्वाकर्षण" },
+    { id: 11, name: "अध्याय 11: कार्य तथा ऊर्जा" },
+    { id: 12, name: "अध्याय 12: ध्वनि" },
+    { id: 13, name: "अध्याय 13: हम बीमार क्यों होते हैं" },
+    { id: 14, name: "अध्याय 14: प्राकृतिक संपदा" },
+    { id: 15, name: "अध्याय 15: खाद्य संसाधनों में सुधार" }
+];
+
+
 // ==========================================
-// GLOBAL UI HELPER FUNCTIONS (FIXED SCOPE)
+// SECTION 2: UI & MODAL MANAGEMENT HELPERS
 // ==========================================
 function showToast(message) {
     const toastMessage = document.getElementById("toast-message");
@@ -37,10 +73,7 @@ function showToast(message) {
 }
 
 window.openDynamicPage = function(title, htmlContent, isNewFlow = false) {
-    if (isNewFlow) {
-        modalHistory = [];
-    }
-
+    if (isNewFlow) modalHistory = [];
     modalHistory.push({ title, htmlContent });
     renderCurrentModalState();
 };
@@ -56,8 +89,8 @@ function renderCurrentModalState() {
     }
 
     const current = modalHistory[modalHistory.length - 1];
-
     let backHeaderHTML = "";
+
     if (modalHistory.length > 1) {
         backHeaderHTML = `
             <div class="mb-3 border-b border-slate-100 pb-2">
@@ -75,6 +108,7 @@ function renderCurrentModalState() {
         dynamicViewModal.classList.remove("hidden");
         dynamicViewModal.classList.add("flex");
     }
+
     window.scrollTo(0, 0);
     if (window.lucide) lucide.createIcons();
 }
@@ -90,7 +124,7 @@ window.goBackModalStep = function() {
 
 window.closeDynamicPage = function() {
     const dynamicViewModal = document.getElementById("dynamic-view-modal");
-    if (timerInterval) clearInterval(timerInterval);
+    if (timerInterval9th) clearInterval(timerInterval9th);
     if (timerInterval10th) clearInterval(timerInterval10th);
     modalHistory = [];
     if (dynamicViewModal) {
@@ -99,10 +133,10 @@ window.closeDynamicPage = function() {
     }
 };
 
-// ==========================================
-// 2. HELPER & NAVIGATION PORTAL FUNCTIONS
-// ==========================================
 
+// ==========================================
+// SECTION 3: NAVIGATION PORTALS & TEMPLATES
+// ==========================================
 function generateSubjectButtonsHTML(classNum) {
     const subjects = [
         { id: 'science', name: '1. विज्ञान (Science)', isScience: true },
@@ -125,15 +159,13 @@ function generateSubjectButtonsHTML(classNum) {
                         <i data-lucide="download" class="w-3 h-3"></i>
                         <span>PDF Download</span>
                     </span>
-                </a>
-            `;
+                </a>`;
         } else {
             return `
                 <button data-action="open-coming-soon-subject" data-subject="${sub.name}" class="w-full text-left bg-white hover:bg-rose-50 border border-slate-200 p-3.5 rounded-2xl flex items-center justify-between shadow-xs active:scale-98 transition-all">
                     <span class="text-xs font-bold text-slate-800">${sub.name}</span>
                     <span class="text-[10px] text-amber-600 font-bold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">Jaldi Upload Hoga</span>
-                </button>
-            `;
+                </button>`;
         }
     }).join('');
 }
@@ -165,13 +197,11 @@ function openModelSetsPortal() {
                 </div>
                 <i data-lucide="chevron-right" class="w-5 h-5"></i>
             </button>
-        </div>
-    `;
+        </div>`;
     openDynamicPage("Model Sets", htmlContent, true);
 }
 
 function renderModelSubjects(classNum) {
-    const pageTitle = `Model Sets for Class ${classNum}th`;
     const subjectsHTML = generateSubjectButtonsHTML(classNum);
     const htmlContent = `
         <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm space-y-1 mb-3">
@@ -179,11 +209,8 @@ function renderModelSubjects(classNum) {
             <h2 class="text-base font-black text-slate-900">विषयों की सूची (Subjects)</h2>
             <p class="text-[11px] text-slate-500 font-bold">मॉडल पेपर देखने या डाउनलोड करने के लिए विषय चुनें:</p>
         </div>
-        <div class="space-y-2">
-            ${subjectsHTML}
-        </div>
-    `;
-    openDynamicPage(pageTitle, htmlContent);
+        <div class="space-y-2">${subjectsHTML}</div>`;
+    openDynamicPage(`Model Sets for Class ${classNum}th`, htmlContent);
 }
 
 function openTestsPortal() {
@@ -213,13 +240,11 @@ function openTestsPortal() {
                 </div>
                 <i data-lucide="chevron-right" class="w-5 h-5"></i>
             </button>
-        </div>
-    `;
+        </div>`;
     openDynamicPage("Live Test", htmlContent, true);
 }
 
 function renderTestSubjects(classNum) {
-    const pageTitle = `Live Test for Class ${classNum}th`;
     const subjects = [
         { id: 'math', name: '1. गणित (Mathematics)', action: classNum === 10 ? 'open-10th-math-test' : 'open-9th-math-test' },
         { id: 'science', name: '2. विज्ञान (Science)', action: 'open-coming-soon-subject' },
@@ -233,8 +258,7 @@ function renderTestSubjects(classNum) {
         <button data-action="${sub.action}" data-subject="${sub.name}" class="w-full text-left bg-white hover:bg-rose-50 border border-slate-200 p-3.5 rounded-2xl flex items-center justify-between shadow-xs active:scale-98 transition-all">
             <span class="text-xs font-bold text-slate-800">${sub.name}</span>
             ${sub.action.includes('math') ? '<span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">Live Active</span>' : '<span class="text-[10px] text-amber-600 font-bold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">Jaldi Upload Hoga</span>'}
-        </button>
-    `).join('');
+        </button>`).join('');
 
     const htmlContent = `
         <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm space-y-1 mb-3">
@@ -242,11 +266,8 @@ function renderTestSubjects(classNum) {
             <h2 class="text-base font-black text-slate-900">विषयों की सूची (Subjects)</h2>
             <p class="text-[11px] text-slate-500 font-bold">लाइव टेस्ट देने के लिए विषय चुनें:</p>
         </div>
-        <div class="space-y-2">
-            ${subjectsHTML}
-        </div>
-    `;
-    openDynamicPage(pageTitle, htmlContent);
+        <div class="space-y-2">${subjectsHTML}</div>`;
+    openDynamicPage(`Live Test for Class ${classNum}th`, htmlContent);
 }
 
 function showComingSoonModal(subjectName) {
@@ -263,8 +284,7 @@ function showComingSoonModal(subjectName) {
             <button onclick="goBackModalStep()" class="w-full bg-crimson text-white font-black py-3 rounded-xl shadow-md text-xs active:scale-95 transition-transform">
                 वापस जाएं (Back)
             </button>
-        </div>
-    `;
+        </div>`;
     openDynamicPage("Coming Soon", htmlContent);
 }
 
@@ -281,115 +301,127 @@ function openPYQPortal() {
             <button onclick="goBackModalStep()" class="bg-amber-600 text-white font-black text-xs px-4 py-2 rounded-xl shadow-sm">
                 वापस जाएँ (Back)
             </button>
-        </div>
-    `;
+        </div>`;
     openDynamicPage("PYQ Question Bank", htmlContent, true);
 }
 
-// ==========================================
-// 3. MATH MODEL SET QUIZ ENGINE (CLASS 9TH)
-// ==========================================
-const testData = {
-    title: "BSEB 9th Mathematics Model Set 1",
-    totalQuestions: 25,
-    timeLimitMinutes: 30,
-    questions: [
-        { id: 1, question: "दो वास्तविक संख्याओं के बीच कितनी वास्तविक संख्याएँ होती हैं?", options: ["एक", "तीन", "पाँच", "अनगिनत"], answer: 3 },
-        { id: 2, question: "निम्नांकित में कौन एक अपरिमेय संख्या है?", options: ["√(4/9)", "√12 / √3", "√7", "√81"], answer: 2 },
-        { id: 3, question: "32²ᐟ⁵ का मान क्या होगा—", options: ["4", "2", "8", "16"], answer: 0 },
-        { id: 4, question: "2√3 + √3 = ?", options: ["2√6", "6", "3√3", "4√6"], answer: 2 },
-        { id: 5, question: "यदि x = 2 + √3, तो 1/x = ?", options: ["2 + 1/√3", "1/(2 - √3)", "1/2 + √3", "2 - √3"], answer: 3 },
-        { id: 6, question: "2x² + 3x³ + 4 एक .......... बहुपद है।", options: ["एकघाती", "द्विघाती", "त्रिघाती", "शून्य घात वाला"], answer: 2 },
-        { id: 7, question: "यदि P(x) = x − 1, q(x) = x + 1, तो P(x) · q(x) = ?", options: ["x² − 1", "2x", "−2", "x³ − 1"], answer: 0 },
-        { id: 8, question: "बहुपद x² − mx + 2, x − 1 से पूर्णतः विभाजित होगा यदि m = ?", options: ["3", "2", "−3", "−2"], answer: 0 },
-        { id: 9, question: "यदि P(x) = x − 1, तो [P(−1) + P(1)] / 2 = ?", options: ["−2", "−3/2", "−1", "0"], answer: 2 },
-        { id: 10, question: "बहुपद P(x) = (x + 2)³ में x² का गुणांक है—", options: ["3", "6", "12", "8"], answer: 1 },
-        { id: 11, question: "249² − 248² = ?", options: ["1²", "477", "487", "497"], answer: 3 },
-        { id: 12, question: "यदि x² + kx + 6 = (x + 2)(x + 3), तो k = ?", options: ["5", "6", "1", "0"], answer: 0 },
-        { id: 13, question: "द्विघात बहुपद में पदों की अधिकतम संख्या होगी—", options: ["0", "1", "2", "3"], answer: 3 },
-        { id: 14, question: "x-अक्ष पर सभी बिंदुओं के लिए कोटि होगी—", options: ["0", "1", "−1", "कोई नहीं"], answer: 0 },
-        { id: 15, question: "वह बिंदु जहाँ दोनों अक्ष मिलते हैं, कहलाता है—", options: ["शून्य", "कोटि", "मूल बिंदु", "चतुर्थांश"], answer: 2 },
-        { id: 16, question: "एक बिंदु का भुज हमेशा धनात्मक किस चतुर्थांश में होगा—", options: ["I और II", "I और IV", "केवल I", "केवल II"], answer: 1 },
-        { id: 17, question: "यदि बिंदु (2, 3) रैखिक समीकरण ax + 3y = 11 के आलेख पर स्थित हैं, तो a = ?", options: ["1", "−1", "2", "−2"], answer: 0 },
-        { id: 18, question: "रैखिक समीकरण 3x − 2y = 1 के कितने हल हैं?", options: ["एक", "दो", "तीन", "अनगिनत"], answer: 3 },
-        { id: 19, question: "समीकरण x = 6 को दो चरोंवाले समीकरण के रूप में लिखेंगे—", options: ["1 · x + 1 · y = 6", "1 · x + 0 · y = 6", "0 · x + 1 · y = 6", "0 · x + 0 · y = 6"], answer: 1 },
-        { id: 20, question: "दो रेखाएँ समांतर होंगी यदि उनमें—", options: ["एक उभयनिष्ठ बिंदु हो", "दो उभयनिष्ठ बिंदु हो", "कोई उभयनिष्ठ बिंदु न हो", "इनमें कोई नहीं"], answer: 2 },
-        { id: 21, question: "बिंदु (−3, −4) किस चतुर्थांश में स्थित है?", options: ["I", "II", "III", "IV"], answer: 2 },
-        { id: 22, question: "दिए गए चित्र में, x = ?", options: ["50°", "60°", "40°", "55°"], answer: 2 },
-        { id: 23, question: "यदि एक त्रिभुज के कोण (x − 10°), (2x + 10°) एवं 6x हैं, तो x = ?", options: ["40°", "30°", "20°", "90°"], answer: 2 },
-        { id: 24, question: "यदि ΔABC में AB = AC तथा ∠B = 80°, तो ∠C = ?", options: ["50°", "40°", "130°", "80°"], answer: 3 },
-        { id: 25, question: "ΔPQR में सत्य है—", options: ["PQ = QR", "PQ > QR", "PQ + QR > PR", "कोई नहीं"], answer: 2 }
-    ]
-};
 
-window.startBSEB9thMathTest = function() {
-    const savedProgress = localStorage.getItem(STORAGE_KEY_PROGRESS);
-    if (savedProgress) {
-        const confirmResume = confirm("आपने पहले यह टेस्ट अधूरा छोड़ा था। क्या आप वहीं से शुरू (Resume) करना चाहते हैं?");
-        if (confirmResume) {
-            const data = JSON.parse(savedProgress);
-            currentQuestionIndex = data.currentQuestionIndex || 0;
-            userAnswers = data.userAnswers || new Array(25).fill(null);
-            visitedQuestions = data.visitedQuestions || new Array(25).fill(false);
-            timeRemaining = data.timeRemaining || 30 * 60;
-        } else {
-            localStorage.removeItem(STORAGE_KEY_PROGRESS);
-            resetTestData();
+// ==========================================
+// SECTION 4: CLASS 9TH MATH TEST ENGINE (JSON FETCH)
+// ==========================================
+
+window.startBSEB9thMathTest = async function() {
+    showToast("9th गणित टेस्ट लोड हो रहा है...");
+    try {
+        const response = await fetch(API_ENDPOINTS.MATH_9TH, { 
+            cache: "no-cache",
+            headers: {
+                "Accept": "application/json"
+            }
+        });
+
+        // MIME Type और HTTP Status Validation
+        const contentType = response.headers.get("content-type");
+        if (!response.ok) {
+            throw new Error(`Server status: ${response.status}`);
         }
-    } else {
-        resetTestData();
-    }
+        if (contentType && !contentType.includes("application/json")) {
+            throw new TypeError("MIME Type Error: Expected JSON response.");
+        }
 
-    renderQuizUI();
-    renderQuestion(currentQuestionIndex);
-    startTimer();
+        const jsonData = await response.json();
+        
+        // Normalize Data Structure
+        const questionsList = Array.isArray(jsonData) ? jsonData : (jsonData.questions || []);
+
+        if (!questionsList.length) {
+            throw new Error("Invalid or empty questions array");
+        }
+
+        testData9th = {
+            title: "BSEB 9th Mathematics Model Set 1",
+            questions: questionsList
+        };
+
+        const totalQ = testData9th.questions.length;
+        const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS_9TH);
+
+        if (savedProgress) {
+            if (confirm("आपने पहले यह टेस्ट अधूरा छोड़ा था। क्या आप वहीं से शुरू (Resume) करना चाहते हैं?")) {
+                const data = JSON.parse(savedProgress);
+                currentQuestionIndex9th = data.currentQuestionIndex || 0;
+                userAnswers9th = data.userAnswers || new Array(totalQ).fill(null);
+                visitedQuestions9th = data.visitedQuestions || new Array(totalQ).fill(false);
+                timeRemaining9th = data.timeRemaining || 30 * 60;
+            } else {
+                localStorage.removeItem(STORAGE_KEYS.PROGRESS_9TH);
+                resetTestData9th(totalQ);
+            }
+        } else {
+            resetTestData9th(totalQ);
+        }
+
+        renderQuizUI9th();
+        renderQuestion9th(currentQuestionIndex9th);
+        startTimer9th();
+
+    } catch (error) {
+        console.error("9th Math Loading Error:", error);
+        showToast("JSON Load Error: File Path या Casing चेक करें!");
+    }
 };
 
-function resetTestData() {
-    currentQuestionIndex = 0;
-    userAnswers.fill(null);
-    visitedQuestions.fill(false);
-    visitedQuestions[0] = true;
-    timeRemaining = 30 * 60;
+function resetTestData9th(totalQ) {
+    currentQuestionIndex9th = 0;
+    userAnswers9th = new Array(totalQ).fill(null);
+    visitedQuestions9th = new Array(totalQ).fill(false);
+    visitedQuestions9th[0] = true;
+    timeRemaining9th = 30 * 60;
 }
 
-function autoSaveProgress() {
-    const progressData = { currentQuestionIndex, userAnswers, visitedQuestions, timeRemaining };
-    localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify(progressData));
+function autoSaveProgress9th() {
+    const data = {
+        currentQuestionIndex: currentQuestionIndex9th,
+        userAnswers: userAnswers9th,
+        visitedQuestions: visitedQuestions9th,
+        timeRemaining: timeRemaining9th
+    };
+    localStorage.setItem(STORAGE_KEYS.PROGRESS_9TH, JSON.stringify(data));
 }
 
-function renderQuizUI() {
+function renderQuizUI9th() {
+    const totalQ = testData9th.questions.length;
     const testUIHTML = `
         <div class="bg-slate-900 text-white p-3 rounded-2xl flex items-center justify-between shadow-md mb-2">
             <div>
-                <h2 class="text-xs font-black text-rose-400">${testData.title}</h2>
-                <p class="text-[10px] text-slate-400 font-bold">25 Questions • Live Test</p>
+                <h2 class="text-xs font-black text-rose-400">${testData9th.title}</h2>
+                <p class="text-[10px] text-slate-400 font-bold">${totalQ} Questions • Live Test</p>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="pauseQuiz()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-2.5 py-1 rounded-xl text-[10px] font-black flex items-center space-x-1">
+                <button onclick="pauseQuiz9th()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-2.5 py-1 rounded-xl text-[10px] font-black flex items-center space-x-1">
                     <i data-lucide="pause" class="w-3 h-3 fill-current"></i>
                     <span>Pause</span>
                 </button>
                 <div class="bg-slate-800 px-3 py-1 rounded-xl border border-rose-500/30 flex items-center space-x-1 text-rose-400 font-mono text-xs font-bold">
                     <i data-lucide="timer" class="w-3.5 h-3.5"></i>
-                    <span id="quiz-timer">30:00</span>
+                    <span id="quiz-timer-9th">30:00</span>
                 </div>
             </div>
         </div>
 
         <div id="quiz-question-card" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
             <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                <span id="q-badge" class="bg-rose-100 text-crimson text-[10px] font-black px-2.5 py-0.5 rounded-full">Question 1 of 25</span>
+                <span id="q-badge-9th" class="bg-rose-100 text-crimson text-[10px] font-black px-2.5 py-0.5 rounded-full">Question 1 of ${totalQ}</span>
                 <span class="text-[10px] text-slate-400 font-bold">+1 Mark</span>
             </div>
-            <h3 id="q-text" class="text-xs sm:text-sm font-bold text-slate-900 leading-relaxed pt-1"></h3>
-            <div id="q-options" class="space-y-2 pt-1"></div>
+            <h3 id="q-text-9th" class="text-xs sm:text-sm font-bold text-slate-900 leading-relaxed pt-1"></h3>
+            <div id="q-options-9th" class="space-y-2 pt-1"></div>
         </div>
 
         <div class="flex items-center justify-between bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm">
-            <button id="prev-btn" onclick="navigateQuestion(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold disabled:opacity-40">Previous</button>
-            <button onclick="clearChoice()" class="text-[11px] text-rose-600 font-bold hover:underline">Clear Choice</button>
-            <button id="next-btn" onclick="navigateQuestion(1)" class="bg-crimson hover:bg-rose-900 text-white px-4 py-1.5 rounded-xl text-xs font-black shadow-sm">Next</button>
+            <button id="prev-btn-9th" onclick="navigateQuestion9th(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold disabled:opacity-40">Previous</button>
+            <button onclick="clearChoice9th()" class="text-[11px] text-rose-600 font-bold hover:underline">Clear Choice</button>
+            <button id="next-btn-9th" onclick="navigateQuestion9th(1)" class="bg-crimson hover:bg-rose-900 text-white px-4 py-1.5 rounded-xl text-xs font-black shadow-sm">Next</button>
         </div>
 
         <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
@@ -397,172 +429,187 @@ function renderQuizUI() {
                 <h4 class="text-[11px] font-black text-slate-800 uppercase tracking-wider">Question Palette</h4>
                 <span class="text-[10px] text-slate-400">Tap to jump</span>
             </div>
-            <div id="question-palette" class="grid grid-cols-5 gap-1.5 max-h-48 overflow-y-auto pr-1"></div>
-            <button onclick="submitFinalQuiz()" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black py-2.5 rounded-xl shadow-md transition-all">SUBMIT TEST NOW</button>
-        </div>
-    `;
+            <div id="question-palette-9th" class="grid grid-cols-5 gap-1.5 max-h-48 overflow-y-auto pr-1"></div>
+            <button onclick="submitFinalQuiz9th()" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black py-2.5 rounded-xl shadow-md transition-all">SUBMIT TEST NOW</button>
+        </div>`;
 
     openDynamicPage("Live Mathematics Test Engine", testUIHTML, true);
 }
 
-window.renderQuestion = function(index) {
-    const q = testData.questions[index];
-    visitedQuestions[index] = true;
-    autoSaveProgress();
+window.renderQuestion9th = function(index) {
+    const q = testData9th.questions[index];
+    visitedQuestions9th[index] = true;
+    autoSaveProgress9th();
 
-    document.getElementById("q-badge").innerText = `Question ${index + 1} of 25`;
-    document.getElementById("q-text").innerHTML = q.question;
+    document.getElementById("q-badge-9th").innerText = `Question ${index + 1} of ${testData9th.questions.length}`;
+    document.getElementById("q-text-9th").innerHTML = q.question;
 
-    const container = document.getElementById("q-options");
+    const container = document.getElementById("q-options-9th");
     container.innerHTML = q.options.map((opt, optIdx) => `
-        <label onclick="selectOption(${index}, ${optIdx})" class="flex items-center space-x-3 p-3 rounded-xl border transition-all cursor-pointer ${
-            userAnswers[index] === optIdx 
+        <label onclick="selectOption9th(${index}, ${optIdx})" class="flex items-center space-x-3 p-3 rounded-xl border transition-all cursor-pointer ${
+            userAnswers9th[index] === optIdx 
             ? 'bg-emerald-50 border-emerald-600 text-emerald-800 font-black shadow-xs ring-1 ring-emerald-500'
             : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold'
         }">
-            <input type="radio" name="opt" ${userAnswers[index] === optIdx ? 'checked' : ''} class="accent-emerald-600 w-4 h-4">
+            <input type="radio" name="opt9" ${userAnswers9th[index] === optIdx ? 'checked' : ''} class="accent-emerald-600 w-4 h-4">
             <span class="text-xs sm:text-sm">${String.fromCharCode(65 + optIdx)}) ${opt}</span>
-        </label>
-    `).join('');
+        </label>`).join('');
 
-    document.getElementById("prev-btn").disabled = (index === 0);
-    renderPalette();
+    document.getElementById("prev-btn-9th").disabled = (index === 0);
+    renderPalette9th();
 };
 
-window.selectOption = function(qIdx, optIdx) {
-    userAnswers[qIdx] = optIdx;
-    renderQuestion(qIdx);
+window.selectOption9th = function(qIdx, optIdx) { userAnswers9th[qIdx] = optIdx; renderQuestion9th(qIdx); };
+window.clearChoice9th = function() { userAnswers9th[currentQuestionIndex9th] = null; renderQuestion9th(currentQuestionIndex9th); };
+
+window.navigateQuestion9th = function(step) {
+    currentQuestionIndex9th += step;
+    if (currentQuestionIndex9th < 0) currentQuestionIndex9th = 0;
+    if (currentQuestionIndex9th >= testData9th.questions.length) currentQuestionIndex9th = testData9th.questions.length - 1;
+    renderQuestion9th(currentQuestionIndex9th);
 };
 
-window.clearChoice = function() {
-    userAnswers[currentQuestionIndex] = null;
-    renderQuestion(currentQuestionIndex);
-};
+window.jumpToQuestion9th = function(index) { currentQuestionIndex9th = index; renderQuestion9th(index); };
 
-window.navigateQuestion = function(step) {
-    currentQuestionIndex += step;
-    if (currentQuestionIndex < 0) currentQuestionIndex = 0;
-    if (currentQuestionIndex >= 25) currentQuestionIndex = 24;
-    renderQuestion(currentQuestionIndex);
-};
-
-window.jumpToQuestion = function(index) {
-    currentQuestionIndex = index;
-    renderQuestion(index);
-};
-
-window.renderPalette = function() {
-    const palette = document.getElementById("question-palette");
-    palette.innerHTML = testData.questions.map((_, idx) => {
+window.renderPalette9th = function() {
+    const palette = document.getElementById("question-palette-9th");
+    palette.innerHTML = testData9th.questions.map((_, idx) => {
         let btnStatusClass = "bg-slate-100 text-slate-600 border-slate-200";
-        if (userAnswers[idx] !== null) btnStatusClass = "bg-emerald-500 text-white border-emerald-600 font-black";
-        else if (visitedQuestions[idx]) btnStatusClass = "bg-amber-500 text-white border-amber-600";
-        if (idx === currentQuestionIndex) btnStatusClass += " ring-2 ring-rose-600 ring-offset-1";
+        if (userAnswers9th[idx] !== null) btnStatusClass = "bg-emerald-500 text-white border-emerald-600 font-black";
+        else if (visitedQuestions9th[idx]) btnStatusClass = "bg-amber-500 text-white border-amber-600";
+        if (idx === currentQuestionIndex9th) btnStatusClass += " ring-2 ring-rose-600 ring-offset-1";
 
-        return `<button onclick="jumpToQuestion(${idx})" class="w-8 h-8 text-[11px] rounded-lg font-bold border flex items-center justify-center transition-all ${btnStatusClass}">${idx + 1}</button>`;
+        return `<button onclick="jumpToQuestion9th(${idx})" class="w-8 h-8 text-[11px] rounded-lg font-bold border flex items-center justify-center transition-all ${btnStatusClass}">${idx + 1}</button>`;
     }).join('');
 };
 
-window.pauseQuiz = function() {
-    if (timerInterval) clearInterval(timerInterval);
-    autoSaveProgress();
-    alert("आपका टेस्ट पॉज़ (Pause) कर दिया गया है।");
+window.pauseQuiz9th = function() {
+    if (timerInterval9th) clearInterval(timerInterval9th);
+    autoSaveProgress9th();
+    alert("आपका टेस्ट पॉज़ कर दिया गया है।");
     closeDynamicPage();
 };
 
-window.startTimer = function() {
-    if (timerInterval) clearInterval(timerInterval);
-    const timerElem = document.getElementById("quiz-timer");
+window.startTimer9th = function() {
+    if (timerInterval9th) clearInterval(timerInterval9th);
+    const timerElem = document.getElementById("quiz-timer-9th");
 
-    timerInterval = setInterval(() => {
-        let mins = Math.floor(timeRemaining / 60);
-        let secs = timeRemaining % 60;
-        if (timerElem) {
-            timerElem.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        }
+    timerInterval9th = setInterval(() => {
+        let mins = Math.floor(timeRemaining9th / 60);
+        let secs = timeRemaining9th % 60;
+        if (timerElem) timerElem.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
 
-        if (--timeRemaining < 0) {
-            clearInterval(timerInterval);
+        if (--timeRemaining9th < 0) {
+            clearInterval(timerInterval9th);
             alert("समय समाप्त! टेस्ट ऑटो-सबमिट हो गया है।");
-            submitFinalQuiz();
+            submitFinalQuiz9th();
         }
     }, 1000);
 };
 
-window.submitFinalQuiz = function() {
-    if (timerInterval) clearInterval(timerInterval);
-    localStorage.removeItem(STORAGE_KEY_PROGRESS);
+// ==========================================
+// SECTION 4: SUBMIT QUIZ WITH EXPLANATION (UPDATED)
+// ==========================================
+window.submitFinalQuiz9th = function() {
+    if (timerInterval9th) clearInterval(timerInterval9th);
+    localStorage.removeItem(STORAGE_KEYS.PROGRESS_9TH);
 
-    let score = 0;
-    let correctCount = 0;
-    let wrongCount = 0;
-    let unattemptedCount = 0;
+    let score = 0, correctCount = 0, wrongCount = 0, unattemptedCount = 0;
+    const totalQ = testData9th.questions.length;
+    let solutionsHTML = "";
 
-    testData.questions.forEach((q, idx) => {
-        const userAns = userAnswers[idx];
-        const isCorrect = (userAns === q.answer);
-        
-        if (userAns === null) unattemptedCount++;
-        else if (isCorrect) { score++; correctCount++; }
-        else wrongCount++;
+    testData9th.questions.forEach((q, idx) => {
+        const userAnsIdx = userAnswers9th[idx];
+        const isCorrect = (userAnsIdx === q.answer);
+
+        let statusBadge = "";
+        let cardBorder = "";
+
+        if (userAnsIdx === null) {
+            unattemptedCount++;
+            statusBadge = `<span class="bg-slate-100 text-slate-700 text-[10px] font-black px-2 py-0.5 rounded-md">छोड़ा गया</span>`;
+            cardBorder = "border-slate-200 bg-slate-50/50";
+        } else if (isCorrect) {
+            score++; correctCount++;
+            statusBadge = `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-md">✓ सही</span>`;
+            cardBorder = "border-emerald-300 bg-emerald-50/30";
+        } else {
+            wrongCount++;
+            statusBadge = `<span class="bg-rose-100 text-rose-800 text-[10px] font-black px-2 py-0.5 rounded-md">✗ गलत</span>`;
+            cardBorder = "border-rose-300 bg-rose-50/30";
+        }
+
+        const userOptionText = userAnsIdx !== null ? q.options[userAnsIdx] : 'कोई विकल्प नहीं चुना';
+        const correctOptionText = q.options[q.answer];
+
+        solutionsHTML += `
+            <div class="p-3.5 rounded-2xl border ${cardBorder} text-left space-y-2">
+                <div class="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                    <span class="text-xs font-black text-slate-800">Q${idx + 1}. ${q.question}</span>
+                    ${statusBadge}
+                </div>
+                <div class="text-[11px] font-bold space-y-1 pt-1">
+                    <p class="text-slate-600">आपका उत्तर: <span class="${isCorrect ? 'text-emerald-700' : 'text-rose-600'} font-black">${userOptionText}</span></p>
+                    <p class="text-emerald-700">सही उत्तर: <span class="font-black">${correctOptionText}</span></p>
+                </div>
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 text-[11px] text-slate-700 mt-2">
+                    <span class="font-black text-slate-900 block mb-0.5">व्याख्या (Explanation):</span>
+                    ${q.explanation || "कोई व्याख्या उपलब्ध नहीं है।"}
+                </div>
+            </div>`;
     });
 
     const scoreHTML = `
-        <div class="bg-white p-5 rounded-3xl border border-rose-100 shadow-xl text-center space-y-4 my-auto">
-            <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-black">✓</div>
-            <h2 class="text-lg font-black text-slate-900">Test Result Summary</h2>
-            <p class="text-xs text-slate-500 font-bold">${testData.title}</p>
-            <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 space-y-0.5">
-                <div class="text-3xl font-black text-emerald-700">${score} / 25</div>
-                <div class="text-[11px] font-bold text-slate-600">Total Score (${((score / 25) * 100).toFixed(1)}%)</div>
+        <div class="bg-white p-4 rounded-3xl border border-rose-100 shadow-xl text-center space-y-4 my-auto max-h-[85vh] overflow-y-auto">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl font-black">✓</div>
+            <div>
+                <h2 class="text-base font-black text-slate-900">Test Result Summary</h2>
+                <p class="text-[11px] text-slate-500 font-bold">${testData9th.title || "Class 9th Mathematics Test"}</p>
             </div>
-            <div class="grid grid-cols-3 gap-1.5 text-xs font-bold">
-                <div class="bg-emerald-50 text-emerald-700 p-2 rounded-xl border border-emerald-200">Sahi: ${correctCount}</div>
-                <div class="bg-rose-50 text-rose-700 p-2 rounded-xl border border-rose-200">Galat: ${wrongCount}</div>
-                <div class="bg-slate-100 text-slate-700 p-2 rounded-xl border border-slate-200">Chhode: ${unattemptedCount}</div>
+            <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-100 space-y-0.5">
+                <div class="text-2xl font-black text-emerald-700">${score} / ${totalQ}</div>
+                <div class="text-[10px] font-bold text-slate-600">Total Score (${((score / totalQ) * 100).toFixed(1)}%)</div>
             </div>
-            <button onclick="closeDynamicPage()" class="w-full bg-crimson text-white font-black py-3 rounded-xl shadow-md text-xs active:scale-95 transition-transform">Finish & Close</button>
-        </div>
-    `;
+            <div class="grid grid-cols-3 gap-1.5 text-[11px] font-bold">
+                <div class="bg-emerald-50 text-emerald-700 p-2 rounded-xl border border-emerald-200">सही: ${correctCount}</div>
+                <div class="bg-rose-50 text-rose-700 p-2 rounded-xl border border-rose-200">गलत: ${wrongCount}</div>
+                <div class="bg-slate-100 text-slate-700 p-2 rounded-xl border border-slate-200">छोड़े: ${unattemptedCount}</div>
+            </div>
+            <div class="space-y-3 pt-2">
+                <h3 class="text-xs font-black text-slate-800 text-left uppercase tracking-wider">प्रश्न और उनके हल (Solution & Explanation)</h3>
+                <div class="space-y-3">${solutionsHTML}</div>
+            </div>
+            <button onclick="closeDynamicPage()" class="w-full bg-crimson text-white font-black py-3 rounded-xl shadow-md text-xs active:scale-95 transition-transform sticky bottom-0">Finish & Close</button>
+        </div>`;
+
     openDynamicPage("Scorecard Result", scoreHTML, true);
 };
 
 // ==========================================
-// 3.1 CLASS 10TH MATHS JSON FETCH & QUIZ ENGINE
+// SECTION 5: CLASS 10TH MATH TEST ENGINE (JSON FETCH)
 // ==========================================
-const STORAGE_KEY_10TH_PROGRESS = "bseb_10th_math_set1_progress";
-let activeTestData10th = null;
-let userAnswers10th = [];
-let visitedQuestions10th = [];
-let currentQuestionIndex10th = 0;
-let timeRemaining10th = 30 * 60;
-let timerInterval10th = null;
-
-const CLASS_10TH_MATH_JSON_URL = "DATA/10th/math/10th_maths_25_ques.json";
-
 window.startBSEB10thMathTest = async function() {
     showToast("लोड हो रहा है, कृपया प्रतीक्षा करें...");
 
     try {
-        const response = await fetch(CLASS_10TH_MATH_JSON_URL, { cache: "force-cache" });
-        if (!response.ok) {
-            throw new Error(`File nahi mili! HTTP Status: ${response.status}`);
-        }
-        activeTestData10th = await response.json();
-        
-        const totalQ = activeTestData10th.questions ? activeTestData10th.questions.length : 25;
-        
-        const savedProgress = localStorage.getItem(STORAGE_KEY_10TH_PROGRESS);
+        const response = await fetch(API_ENDPOINTS.MATH_10TH, { cache: "force-cache" });
+        if (!response.ok) throw new Error(`HTTP Status: ${response.status}`);
+
+        const jsonData = await response.json();
+        activeTestData10th = Array.isArray(jsonData) ? { questions: jsonData } : jsonData;
+
+        const totalQ = activeTestData10th.questions.length;
+        const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS_10TH);
+
         if (savedProgress) {
-            const confirmResume = confirm("आपने 10वीं कक्षा का टेस्ट पहले अधूरा छोड़ा था। क्या आप वहीं से शुरू (Resume) करना चाहते हैं?");
-            if (confirmResume) {
+            if (confirm("आपने 10वीं कक्षा का टेस्ट पहले अधूरा छोड़ा था। क्या आप वहीं से शुरू (Resume) करना चाहते हैं?")) {
                 const data = JSON.parse(savedProgress);
                 currentQuestionIndex10th = data.currentQuestionIndex || 0;
                 userAnswers10th = data.userAnswers || new Array(totalQ).fill(null);
                 visitedQuestions10th = data.visitedQuestions || new Array(totalQ).fill(false);
                 timeRemaining10th = data.timeRemaining || 30 * 60;
             } else {
-                localStorage.removeItem(STORAGE_KEY_10TH_PROGRESS);
+                localStorage.removeItem(STORAGE_KEYS.PROGRESS_10TH);
                 reset10thTestData(totalQ);
             }
         } else {
@@ -575,8 +622,7 @@ window.startBSEB10thMathTest = async function() {
 
     } catch (error) {
         console.error("JSON Loading Failed:", error);
-        showToast("Error: JSON File load nahi ho saki. Local Server ya path check karein.");
-        alert("Details: " + error.message);
+        showToast("Error: JSON File load nahi ho saki.");
     }
 };
 
@@ -595,7 +641,7 @@ function autoSave10thProgress() {
         visitedQuestions: visitedQuestions10th, 
         timeRemaining: timeRemaining10th 
     };
-    localStorage.setItem(STORAGE_KEY_10TH_PROGRESS, JSON.stringify(progressData));
+    localStorage.setItem(STORAGE_KEYS.PROGRESS_10TH, JSON.stringify(progressData));
 }
 
 function render10thQuizUI() {
@@ -640,8 +686,7 @@ function render10thQuizUI() {
             </div>
             <div id="question-palette-10th" class="grid grid-cols-5 gap-1.5 max-h-48 overflow-y-auto pr-1"></div>
             <button onclick="submitFinal10thQuiz()" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black py-2.5 rounded-xl shadow-md transition-all">SUBMIT TEST NOW</button>
-        </div>
-    `;
+        </div>`;
 
     openDynamicPage("Class 10th Mathematics Test", testUIHTML, true);
 }
@@ -663,23 +708,15 @@ window.render10thQuestion = function(index) {
             : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold'
         }">
             <input type="radio" name="opt10" ${userAnswers10th[index] === optIdx ? 'checked' : ''} class="accent-emerald-600 w-4 h-4">
-            <span class="text-xs sm:text-sm">${String.fromCharCode(65 + optIdx)}) ${opt}</span>
-        </label>
-    `).join('');
+            <span class="text-xs sm:text-sm">${opt}</span>
+        </label>`).join('');
 
     document.getElementById("prev-10th-btn").disabled = (index === 0);
     render10thPalette();
 };
 
-window.select10thOption = function(qIdx, optIdx) {
-    userAnswers10th[qIdx] = optIdx;
-    render10thQuestion(qIdx);
-};
-
-window.clear10thChoice = function() {
-    userAnswers10th[currentQuestionIndex10th] = null;
-    render10thQuestion(currentQuestionIndex10th);
-};
+window.select10thOption = function(qIdx, optIdx) { userAnswers10th[qIdx] = optIdx; render10thQuestion(qIdx); };
+window.clear10thChoice = function() { userAnswers10th[currentQuestionIndex10th] = null; render10thQuestion(currentQuestionIndex10th); };
 
 window.navigate10thQuestion = function(step) {
     const totalQ = activeTestData10th.questions.length;
@@ -689,10 +726,7 @@ window.navigate10thQuestion = function(step) {
     render10thQuestion(currentQuestionIndex10th);
 };
 
-window.jumpTo10thQuestion = function(index) {
-    currentQuestionIndex10th = index;
-    render10thQuestion(index);
-};
+window.jumpTo10thQuestion = function(index) { currentQuestionIndex10th = index; render10thQuestion(index); };
 
 window.render10thPalette = function() {
     const palette = document.getElementById("question-palette-10th");
@@ -709,7 +743,7 @@ window.render10thPalette = function() {
 window.pause10thQuiz = function() {
     if (timerInterval10th) clearInterval(timerInterval10th);
     autoSave10thProgress();
-    alert("आपका टेस्ट पॉज़ (Pause) कर दिया गया है।");
+    alert("आपका टेस्ट पॉज़ कर दिया गया है।");
     closeDynamicPage();
 };
 
@@ -720,9 +754,7 @@ window.start10thTimer = function() {
     timerInterval10th = setInterval(() => {
         let mins = Math.floor(timeRemaining10th / 60);
         let secs = timeRemaining10th % 60;
-        if (timerElem) {
-            timerElem.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        }
+        if (timerElem) timerElem.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
 
         if (--timeRemaining10th < 0) {
             clearInterval(timerInterval10th);
@@ -734,148 +766,98 @@ window.start10thTimer = function() {
 
 window.submitFinal10thQuiz = function() {
     if (timerInterval10th) clearInterval(timerInterval10th);
-    localStorage.removeItem(STORAGE_KEY_10TH_PROGRESS);
+    localStorage.removeItem(STORAGE_KEYS.PROGRESS_10TH);
 
-    let score = 0;
-    let correctCount = 0;
-    let wrongCount = 0;
-    let unattemptedCount = 0;
+    let score = 0, correctCount = 0, wrongCount = 0, unattemptedCount = 0;
     const totalQ = activeTestData10th.questions.length;
+    let solutionsHTML = "";
 
     activeTestData10th.questions.forEach((q, idx) => {
-        const userAns = userAnswers10th[idx];
-        const isCorrect = (userAns === q.answer);
-        
-        if (userAns === null) unattemptedCount++;
-        else if (isCorrect) { score++; correctCount++; }
-        else wrongCount++;
+        const userAnsIdx = userAnswers10th[idx];
+        const selectedOptionText = userAnsIdx !== null ? q.options[userAnsIdx] : null;
+        const isCorrect = (selectedOptionText === q.answer);
+
+        let statusBadge = "";
+        let cardBorder = "";
+
+        if (userAnsIdx === null) {
+            unattemptedCount++;
+            statusBadge = `<span class="bg-slate-100 text-slate-700 text-[10px] font-black px-2 py-0.5 rounded-md">छोड़ा गया</span>`;
+            cardBorder = "border-slate-200 bg-slate-50/50";
+        } else if (isCorrect) {
+            score++; correctCount++;
+            statusBadge = `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-md">✓ सही</span>`;
+            cardBorder = "border-emerald-300 bg-emerald-50/30";
+        } else {
+            wrongCount++;
+            statusBadge = `<span class="bg-rose-100 text-rose-800 text-[10px] font-black px-2 py-0.5 rounded-md">✗ गलत</span>`;
+            cardBorder = "border-rose-300 bg-rose-50/30";
+        }
+
+        solutionsHTML += `
+            <div class="p-3.5 rounded-2xl border ${cardBorder} text-left space-y-2">
+                <div class="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                    <span class="text-xs font-black text-slate-800">Q${idx + 1}. ${q.question}</span>
+                    ${statusBadge}
+                </div>
+                <div class="text-[11px] font-bold space-y-1 pt-1">
+                    <p class="text-slate-600">उत्तर: <span class="${isCorrect ? 'text-emerald-700' : 'text-rose-600'} font-black">${selectedOptionText ? selectedOptionText : 'कोई विकल्प नहीं चुना'}</span></p>
+                    <p class="text-emerald-700">सही उत्तर: <span class="font-black">${q.answer}</span></p>
+                </div>
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 text-[11px] text-slate-700 mt-2">
+                    <span class="font-black text-slate-900 block mb-0.5">व्याख्या:</span>
+                    ${q.explanation || "कोई व्याख्या उपलब्ध नहीं है।"}
+                </div>
+            </div>`;
     });
 
     const scoreHTML = `
-        <div class="bg-white p-5 rounded-3xl border border-rose-100 shadow-xl text-center space-y-4 my-auto">
-            <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-black">✓</div>
-            <h2 class="text-lg font-black text-slate-900">Test Result Summary</h2>
-            <p class="text-xs text-slate-500 font-bold">${activeTestData10th.title || "Class 10th Mathematics Test"}</p>
-            <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 space-y-0.5">
-                <div class="text-3xl font-black text-emerald-700">${score} / ${totalQ}</div>
-                <div class="text-[11px] font-bold text-slate-600">Total Score (${((score / totalQ) * 100).toFixed(1)}%)</div>
+        <div class="bg-white p-4 rounded-3xl border border-rose-100 shadow-xl text-center space-y-4 my-auto max-h-[85vh] overflow-y-auto">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl font-black">✓</div>
+            <div>
+                <h2 class="text-base font-black text-slate-900">Test Result Summary</h2>
+                <p class="text-[11px] text-slate-500 font-bold">${activeTestData10th.title || "Class 10th Mathematics Test"}</p>
             </div>
-            <div class="grid grid-cols-3 gap-1.5 text-xs font-bold">
+            <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-100 space-y-0.5">
+                <div class="text-2xl font-black text-emerald-700">${score} / ${totalQ}</div>
+                <div class="text-[10px] font-bold text-slate-600">Total Score (${((score / totalQ) * 100).toFixed(1)}%)</div>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 text-[11px] font-bold">
                 <div class="bg-emerald-50 text-emerald-700 p-2 rounded-xl border border-emerald-200">Sahi: ${correctCount}</div>
                 <div class="bg-rose-50 text-rose-700 p-2 rounded-xl border border-rose-200">Galat: ${wrongCount}</div>
                 <div class="bg-slate-100 text-slate-700 p-2 rounded-xl border border-slate-200">Chhode: ${unattemptedCount}</div>
             </div>
-            <button onclick="closeDynamicPage()" class="w-full bg-crimson text-white font-black py-3 rounded-xl shadow-md text-xs active:scale-95 transition-transform">Finish & Close</button>
-        </div>
-    `;
+            <div class="space-y-3 pt-2">
+                <h3 class="text-xs font-black text-slate-800 text-left uppercase tracking-wider">प्रश्न और उनके हल</h3>
+                <div class="space-y-3">${solutionsHTML}</div>
+            </div>
+            <button onclick="closeDynamicPage()" class="w-full bg-crimson text-white font-black py-3 rounded-xl shadow-md text-xs active:scale-95 transition-transform sticky bottom-0">Finish & Close</button>
+        </div>`;
+
     openDynamicPage("Scorecard Result", scoreHTML, true);
 };
 
-// ==========================================
-// 4. CLASS 9TH SCIENCE CHAPTER 1 PRACTICE TEST ENGINE
-// ==========================================
-const class9ScienceChapters = [
-    { id: 1, name: "अध्याय 1: हमारे आस-पास के पदार्थ" },
-    { id: 2, name: "अध्याय 2: क्या हमारे आस-पास के पदार्थ शुद्ध हैं" },
-    { id: 3, name: "अध्याय 3: परमाणु एवं अणु" },
-    { id: 4, name: "अध्याय 4: परमाणु की संरचना" },
-    { id: 5, name: "अध्याय 5: जीवन की मौलिक इकाई" },
-    { id: 6, name: "अध्याय 6: ऊतक" },
-    { id: 7, name: "अध्याय 7: जीवों में विविधता" },
-    { id: 8, name: "अध्याय 8: गति" },
-    { id: 9, name: "अध्याय 9: बल तथा गति के नियम" },
-    { id: 10, name: "अध्याय 10: गुरुत्वाकर्षण" },
-    { id: 11, name: "अध्याय 11: कार्य तथा ऊर्जा" },
-    { id: 12, name: "अध्याय 12: ध्वनि" },
-    { id: 13, name: "अध्याय 13: हम बीमार क्यों होते हैं" },
-    { id: 14, name: "अध्याय 14: प्राकृतिक संपदा" },
-    { id: 15, name: "अध्याय 15: खाद्य संसाधनों में सुधार" }
-];
 
-const class9ScienceCh1Data = {
-    title: "अध्याय 1: हमारे आस-पास के पदार्थ (Practice Test)",
-    totalQuestions: 20,
-    questions: [
-        {
-            id: 1,
-            question: "1. निम्नलिखित में से कौन-सा पदार्थ है?",
-            options: ["स्नेह", "हवा", "नफरत", "विचार"],
-            answer: 1,
-            explanation: "हवा का एक निश्चित द्रव्यमान होता है और यह स्थान घेरती है, इसलिए यह एक पदार्थ है।"
-        },
-        {
-            id: 2,
-            question: "2. पदार्थ के कणों के बीच क्या होता है?",
-            options: ["केवल आकर्षण बल", "केवल प्रतिकर्षण बल", "रिक्त स्थान (अंतरआणविक स्थान)", "कोई स्थान नहीं होता"],
-            answer: 2,
-            explanation: "पदार्थ के कणों के बीच सूक्ष्म रिक्त स्थान होता है, जिसे अंतरआणविक स्थान कहते हैं।"
-        },
-        {
-            id: 3,
-            question: "3. जिस ताप पर ठोस पिघलकर द्रव बन जाता है, वह क्या कहलाता है?",
-            options: ["क्वथनांक (Boiling point)", "गलनांक (Melting point)", "संघनन (Condensation)", "हिमांक (Freezing point)"],
-            answer: 1,
-            explanation: "जिस नियत तापमान पर कोई ठोस द्रव में बदलता है, उसे उसका गलनांक कहते हैं।"
-        },
-        {
-            id: 4,
-            question: "4. पानी का क्वथनांक (Boiling point) केल्विन पैमाने पर कितना होता है?",
-            options: ["273 K", "373 K", "100 K", "0 K"],
-            answer: 1,
-            explanation: "पानी 100°C पर उबलता है। केल्विन में: 100 + 273 = 373 K।"
-        },
-        {
-            id: 5,
-            question: "5. 25°C को केल्विन पैमाने पर बदलने पर मान होगा—",
-            options: ["298 K", "273 K", "300 K", "250 K"],
-            answer: 0,
-            explanation: "K = 25 + 273 = 298 K।"
-        },
-        {
-            id: 6,
-            question: "6. द्रव से गैस में बदलने की प्रक्रिया को क्या कहते हैं?",
-            options: ["वाष्पीकरण (Evaporation)", "ऊर्ध्वपातन (Sublimation)", "संघनन", "जमुना"],
-            answer: 0,
-            explanation: "द्रव का गैस अवस्था में परिवर्तन वाष्पीकरण कहलाता है।"
-        },
-        {
-            id: 7,
-            question: "7. निम्नलिखित में से किसमें ऊर्ध्वपातन (Sublimation) का गुण पाया जाता है?",
-            options: ["नमक", "कपूर (Camphor)", "चीनी", "जल"],
-            answer: 1,
-            explanation: "कपूर सीधे ठोस से गैस बनता है, इसे ऊर्ध्वपातन कहते हैं।"
-        },
-        {
-            id: 8,
-            question: "8. गर्मियों के दिनों में सूती कपड़े पहनने की सलाह क्यों दी जाती है?",
-            options: [
-                "यह पसीने को सोखकर वाष्पीकरण में मदद करता है जिससे ठंडक मिलती है",
-                "यह कपड़ा बहुत भारी होता है",
-                "यह गर्मी को रोकता है",
-                "इसमें से हवा पार नहीं होती"
-            ],
-            answer: 0,
-            explanation: "सूती कपड़े पसीना सोखकर वाष्पीकरण में मदद करते हैं।"
-        },
-        {
-            id: 9,
-            question: "9. गैसों में विसरण (Diffusion) की दर होती है—",
-            options: ["बहुत कम", "बराबर", "बहुत अधिक", "शून्य"],
-            answer: 2,
-            explanation: "गैस कणों की गतिज ऊर्जा अधिक होने के कारण विसरण सबसे तेज़ होता है।"
-        },
-        {
-            id: 10,
-            question: "10. ठोस कार्बन डाइऑक्साइड (CO₂) को किस नाम से जाना जाता है?",
-            options: ["शुष्क बर्फ (Dry Ice)", "भारी जल", "सादा बर्फ", "तरल गैस"],
-            answer: 0,
-            explanation: "ठोस CO₂ को शुष्क बर्फ (Dry Ice) कहा जाता है।"
+// ==========================================
+// SECTION 6: CHAPTERWISE PRACTICE ENGINE (CLASS 9TH SCIENCE)
+// ==========================================
+async function renderClass9Ch1PracticeTest() {
+    if (!scienceCh1Data) {
+        showToast("लोड हो रहा है...");
+        try {
+            const res = await fetch(API_ENDPOINTS.SCIENCE_9TH_CH1);
+            const questions = await res.json();
+            scienceCh1Data = {
+                title: "अध्याय 1: हमारे आस-पास के पदार्थ (Practice Test)",
+                questions: questions
+            };
+        } catch (e) {
+            showToast("JSON file load failed!");
+            return;
         }
-    ]
-};
+    }
 
-function renderClass9Ch1PracticeTest() {
-    let questionsHTML = class9ScienceCh1Data.questions.map((q, qIdx) => {
+    let questionsHTML = scienceCh1Data.questions.map((q, qIdx) => {
         const selectedOpt = currentCh1Answers[qIdx];
         const isAnswered = selectedOpt !== null;
 
@@ -893,15 +875,11 @@ function renderClass9Ch1PracticeTest() {
             }
 
             return `
-                <button 
-                    onclick="handleCh1OptionSelect(${qIdx}, ${optIdx})" 
-                    ${isAnswered ? 'disabled' : ''} 
-                    class="w-full text-left p-3 rounded-xl border text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-between ${btnStyle}">
+                <button onclick="handleCh1OptionSelect(${qIdx}, ${optIdx})" ${isAnswered ? 'disabled' : ''} class="w-full text-left p-3 rounded-xl border text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-between ${btnStyle}">
                     <span>${String.fromCharCode(65 + optIdx)}) ${opt}</span>
                     ${isAnswered && optIdx === q.answer ? '<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 flex-none"></i>' : ''}
                     ${isAnswered && selectedOpt === optIdx && selectedOpt !== q.answer ? '<i data-lucide="x-circle" class="w-4 h-4 text-rose-600 flex-none"></i>' : ''}
-                </button>
-            `;
+                </button>`;
         }).join('');
 
         let explanationHTML = "";
@@ -914,39 +892,32 @@ function renderClass9Ch1PracticeTest() {
                         <span>${isCorrect ? 'सही उत्तर!' : 'गलत उत्तर! सही उत्तर विकल्प (' + String.fromCharCode(65 + q.answer) + ') है।'}</span>
                     </div>
                     <p class="text-[11px] font-bold text-slate-700 leading-relaxed pt-0.5">
-                        <span class="font-black text-slate-900">व्याख्या (Explanation):</span> ${q.explanation}
+                        <span class="font-black text-slate-900">व्याख्या:</span> ${q.explanation}
                     </p>
-                </div>
-            `;
+                </div>`;
         }
 
         return `
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3 mb-4">
                 <h3 class="text-xs sm:text-sm font-bold text-slate-900 leading-relaxed">${q.question}</h3>
-                <div class="space-y-2">
-                    ${optionsHTML}
-                </div>
+                <div class="space-y-2">${optionsHTML}</div>
                 ${explanationHTML}
-            </div>
-        `;
+            </div>`;
     }).join('');
 
     const pageContent = `
         <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm space-y-1 mb-3">
             <span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full">Chapterwise Live Practice</span>
-            <h2 class="text-base font-black text-slate-900">${class9ScienceCh1Data.title}</h2>
+            <h2 class="text-base font-black text-slate-900">${scienceCh1Data.title}</h2>
             <p class="text-[11px] text-slate-500 font-bold">सही विकल्प चुनें और उत्तर के साथ व्याख्या तुरंत देखें:</p>
         </div>
-        <div>
-            ${questionsHTML}
-        </div>
-    `;
+        <div>${questionsHTML}</div>`;
 
     openDynamicPage("Chapter 1: हमारे आस-पास के पदार्थ", pageContent);
 }
 
-window.handleCh1OptionSelect = function(questionIndex, optionIndex) {
-    currentCh1Answers[questionIndex] = optionIndex;
+window.handleCh1OptionSelect = function(qIdx, optIdx) {
+    currentCh1Answers[qIdx] = optIdx;
     renderClass9Ch1PracticeTest();
 };
 
@@ -960,8 +931,7 @@ function openClass9ScienceChapters() {
                 <span class="text-xs font-bold text-slate-800 leading-snug">${chap.name}</span>
             </div>
             <i data-lucide="arrow-right-circle" class="w-4 h-4 text-crimson flex-none ml-2"></i>
-        </button>
-    `).join("");
+        </button>`).join("");
 
     const pageHTML = `
         <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm space-y-1 mb-3">
@@ -969,10 +939,8 @@ function openClass9ScienceChapters() {
             <h2 class="text-base font-black text-slate-900">विषय सूची (Chapter List)</h2>
             <p class="text-[11px] text-slate-500 font-bold">प्रैक्टिस करने के लिए किसी भी अध्याय पर क्लिक करें:</p>
         </div>
-        <div class="space-y-2">
-            ${chaptersHTML}
-        </div>
-    `;
+        <div class="space-y-2">${chaptersHTML}</div>`;
+
     openDynamicPage("Class 9 Science Chapters", pageHTML);
 }
 
@@ -997,8 +965,7 @@ function openChapterwisePracticePortal() {
                 </div>
                 <i data-lucide="chevron-right" class="w-5 h-5"></i>
             </button>
-        </div>
-    `;
+        </div>`;
     openDynamicPage("Chapter Wise Practice", htmlContent, true);
 }
 
@@ -1023,8 +990,7 @@ function renderChapterwiseSubjects(className, isClass9 = true) {
         <button data-action="${sub.action}" class="w-full bg-white hover:bg-rose-50 border ${sub.highlight ? 'border-crimson ring-1 ring-crimson/30' : 'border-slate-200'} p-3.5 rounded-2xl flex items-center justify-between shadow-xs active:scale-98 transition-transform">
             <span class="text-xs font-black ${sub.highlight ? 'text-crimson' : 'text-slate-800'}">${sub.name}</span>
             <i data-lucide="chevron-right" class="w-4 h-4 ${sub.highlight ? 'text-crimson' : 'text-slate-400'}"></i>
-        </button>
-    `).join("");
+        </button>`).join("");
 
     const pageHTML = `
         <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm space-y-1 mb-3">
@@ -1032,10 +998,8 @@ function renderChapterwiseSubjects(className, isClass9 = true) {
             <h2 class="text-base font-black text-slate-900">${className} विषयों की सूची</h2>
             <p class="text-[11px] text-slate-500 font-bold">प्रैक्टिस शुरू करने के लिए विषय चुनें:</p>
         </div>
-        <div class="space-y-2">
-            ${listHTML}
-        </div>
-    `;
+        <div class="space-y-2">${listHTML}</div>`;
+
     openDynamicPage(`${className} Subjects`, pageHTML);
 }
 
@@ -1053,16 +1017,15 @@ function openChapterQuizPlaceholder(chapName) {
             <button onclick="goBackModalStep()" class="w-full bg-crimson text-white font-black py-3 rounded-xl shadow-md text-xs active:scale-95 transition-transform">
                 वापस जाएं (Back)
             </button>
-        </div>
-    `;
+        </div>`;
     openDynamicPage("Practice Set", htmlContent);
 }
 
+
 // ==========================================
-// 5. MAIN APPLICATION INITIALIZATION & DOM EVENTS
+// SECTION 7: INITIALIZATION & GLOBAL EVENT LISTENERS
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    
     if (window.lucide) lucide.createIcons();
 
     const sideMenuOverlay = document.getElementById("side-menu-overlay");
@@ -1089,71 +1052,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const action = target.getAttribute("data-action");
 
-        if (action === "toggle-menu" || action === "open-menu") {
-            openSideMenu();
-        }
-        else if (action === "quick-model-sets" || action === "open-model-sets") {
-            openModelSetsPortal();
-        }
-        else if (action === "quick-tests" || action === "open-tests") {
-            openTestsPortal();
-        }
-        else if (action === "quick-pyq" || action === "open-pyq") {
-            openPYQPortal();
-        }
-        else if (action === "open-10th-model-subjects") {
-            renderModelSubjects(10);
-        }
-        else if (action === "open-9th-model-subjects") {
-            renderModelSubjects(9);
-        }
-        else if (action === "open-10th-test-subjects") {
-            renderTestSubjects(10);
-        }
-        else if (action === "open-9th-test-subjects") {
-            renderTestSubjects(9);
-        }
-        else if (action === "open-chapterwise-practice") {
-            openChapterwisePracticePortal();
-        }
-        else if (action === "open-9th-chapterwise-subjects") {
-            renderChapterwiseSubjects("Class 9th", true);
-        }
-        else if (action === "open-10th-chapterwise-subjects") {
-            renderChapterwiseSubjects("Class 10th", false);
-        }
-        else if (action === "open-9th-science-chapters") {
-            openClass9ScienceChapters();
-        }
-        else if (action === "open-10th-math-test") {
-            startBSEB10thMathTest();
-        }
-        else if (action === "open-chapter-quiz") {
-            const chapId = target.getAttribute("data-chapter-id");
-            if (chapId === "1") {
-                currentCh1Answers = new Array(20).fill(null);
-                renderClass9Ch1PracticeTest();
-            } else {
-                const chapName = target.getAttribute("data-chapter-name");
-                openChapterQuizPlaceholder(chapName);
+        switch (action) {
+            case "toggle-menu":
+            case "open-menu":
+                openSideMenu();
+                break;
+            case "quick-model-sets":
+            case "open-model-sets":
+                openModelSetsPortal();
+                break;
+            case "quick-tests":
+            case "open-tests":
+                openTestsPortal();
+                break;
+            case "quick-pyq":
+            case "open-pyq":
+                openPYQPortal();
+                break;
+            case "open-10th-model-subjects":
+                renderModelSubjects(10);
+                break;
+            case "open-9th-model-subjects":
+                renderModelSubjects(9);
+                break;
+            case "open-10th-test-subjects":
+                renderTestSubjects(10);
+                break;
+            case "open-9th-test-subjects":
+                renderTestSubjects(9);
+                break;
+            case "open-chapterwise-practice":
+                openChapterwisePracticePortal();
+                break;
+            case "open-9th-chapterwise-subjects":
+                renderChapterwiseSubjects("Class 9th", true);
+                break;
+            case "open-10th-chapterwise-subjects":
+                renderChapterwiseSubjects("Class 10th", false);
+                break;
+            case "open-9th-science-chapters":
+                openClass9ScienceChapters();
+                break;
+            case "open-10th-math-test":
+                startBSEB10thMathTest();
+                break;
+            case "open-9th-math-test":
+                startBSEB9thMathTest();
+                break;
+            case "open-chapter-quiz": {
+                const chapId = target.getAttribute("data-chapter-id");
+                if (chapId === "1") {
+                    currentCh1Answers = new Array(20).fill(null);
+                    renderClass9Ch1PracticeTest();
+                } else {
+                    const chapName = target.getAttribute("data-chapter-name");
+                    openChapterQuizPlaceholder(chapName);
+                }
+                break;
             }
-        }
-        else if (action === "open-coming-soon-subject") {
-            const subjectName = target.getAttribute("data-subject");
-            showComingSoonModal(subjectName);
-        }
-        else if (action === "buy-book") {
-            const bookId = target.getAttribute("data-book-id");
-            window.open(`https://wa.me/919128919447?text=Hi%20Raj%20Sir,%20I%20want%20to%20order%20Book%20ID:%20${bookId}`, "_blank");
-        }
-        else if (action === "coming-soon") {
-            showToast("बहुत ही जल्द यह सुविधा चालू होगी!");
-        }
-        else if (action === "subject-coming-soon") {
-            showToast("यह विषय बहुत जल्द अपलोड किया जाएगा!");
-        }
-        else if (action === "open-9th-math-test") {
-            startBSEB9thMathTest();
+            case "open-coming-soon-subject": {
+                const subjectName = target.getAttribute("data-subject");
+                showComingSoonModal(subjectName);
+                break;
+            }
+            case "buy-book": {
+                const bookId = target.getAttribute("data-book-id");
+                window.open(`https://wa.me/919128919447?text=Hi%20Raj%20Sir,%20I%20want%20to%20order%20Book%20ID:%20${bookId}`, "_blank");
+                break;
+            }
+            case "coming-soon":
+                showToast("बहुत ही जल्द यह सुविधा चालू होगी!");
+                break;
+            case "subject-coming-soon":
+                showToast("यह विषय बहुत जल्द अपलोड किया जाएगा!");
+                break;
         }
     });
 
