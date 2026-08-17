@@ -450,6 +450,251 @@ window.submitFinalQuiz = function() {
 };
 
 // ==========================================
+// 3.1 CLASS 10TH MATHS JSON FETCH & QUIZ ENGINE
+// ==========================================
+const STORAGE_KEY_10TH_PROGRESS = "bseb_10th_math_set1_progress";
+let activeTestData10th = null;
+let userAnswers10th = [];
+let visitedQuestions10th = [];
+let currentQuestionIndex10th = 0;
+let timeRemaining10th = 30 * 60;
+let timerInterval10th = null;
+
+// JSON Path linked as per structure
+const CLASS_10TH_MATH_JSON_URL = "DATA/10th/math/10th_maths_25_ques.json";
+
+window.startBSEB10thMathTest = async function() {
+    showToast("लोड हो रहा है, कृपया प्रतीक्षा करें...");
+
+    try {
+        // Fast JSON Fetch from external path
+        const response = await fetch(CLASS_10TH_MATH_JSON_URL, { cache: "force-cache" });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        activeTestData10th = await response.json();
+        
+        const totalQ = activeTestData10th.questions ? activeTestData10th.questions.length : 25;
+        
+        const savedProgress = localStorage.getItem(STORAGE_KEY_10TH_PROGRESS);
+        if (savedProgress) {
+            const confirmResume = confirm("आपने 10वीं कक्षा का टेस्ट पहले अधूरा छोड़ा था। क्या आप वहीं से शुरू (Resume) करना चाहते हैं?");
+            if (confirmResume) {
+                const data = JSON.parse(savedProgress);
+                currentQuestionIndex10th = data.currentQuestionIndex || 0;
+                userAnswers10th = data.userAnswers || new Array(totalQ).fill(null);
+                visitedQuestions10th = data.visitedQuestions || new Array(totalQ).fill(false);
+                timeRemaining10th = data.timeRemaining || 30 * 60;
+            } else {
+                localStorage.removeItem(STORAGE_KEY_10TH_PROGRESS);
+                reset10thTestData(totalQ);
+            }
+        } else {
+            reset10thTestData(totalQ);
+        }
+
+        render10thQuizUI();
+        render10thQuestion(currentQuestionIndex10th);
+        start10thTimer();
+
+    } catch (error) {
+        console.error("JSON Loading Failed:", error);
+    
+    }
+};
+
+function reset10thTestData(totalQ) {
+    currentQuestionIndex10th = 0;
+    userAnswers10th = new Array(totalQ).fill(null);
+    visitedQuestions10th = new Array(totalQ).fill(false);
+    visitedQuestions10th[0] = true;
+    timeRemaining10th = 30 * 60;
+}
+
+function autoSave10thProgress() {
+    const progressData = { 
+        currentQuestionIndex: currentQuestionIndex10th, 
+        userAnswers: userAnswers10th, 
+        visitedQuestions: visitedQuestions10th, 
+        timeRemaining: timeRemaining10th 
+    };
+    localStorage.setItem(STORAGE_KEY_10TH_PROGRESS, JSON.stringify(progressData));
+}
+
+function render10thQuizUI() {
+    const totalQ = activeTestData10th.questions.length;
+    const testUIHTML = `
+        <div class="bg-slate-900 text-white p-3 rounded-2xl flex items-center justify-between shadow-md mb-2">
+            <div>
+                <h2 class="text-xs font-black text-sky-400">${activeTestData10th.title || "BSEB 10th Mathematics Model Set 1"}</h2>
+                <p class="text-[10px] text-slate-400 font-bold">${totalQ} Questions • Live Test</p>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="pause10thQuiz()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-2.5 py-1 rounded-xl text-[10px] font-black flex items-center space-x-1">
+                    <i data-lucide="pause" class="w-3 h-3 fill-current"></i>
+                    <span>Pause</span>
+                </button>
+                <div class="bg-slate-800 px-3 py-1 rounded-xl border border-sky-500/30 flex items-center space-x-1 text-sky-400 font-mono text-xs font-bold">
+                    <i data-lucide="timer" class="w-3.5 h-3.5"></i>
+                    <span id="quiz-10th-timer">30:00</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz-question-card-10th" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span id="q10-badge" class="bg-sky-100 text-accentBlue text-[10px] font-black px-2.5 py-0.5 rounded-full">Question 1 of ${totalQ}</span>
+                <span class="text-[10px] text-slate-400 font-bold">+1 Mark</span>
+            </div>
+            <h3 id="q10-text" class="text-xs sm:text-sm font-bold text-slate-900 leading-relaxed pt-1"></h3>
+            <div id="q10-options" class="space-y-2 pt-1"></div>
+        </div>
+
+        <div class="flex items-center justify-between bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm">
+            <button id="prev-10th-btn" onclick="navigate10thQuestion(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold disabled:opacity-40">Previous</button>
+            <button onclick="clear10thChoice()" class="text-[11px] text-sky-600 font-bold hover:underline">Clear Choice</button>
+            <button id="next-10th-btn" onclick="navigate10thQuestion(1)" class="bg-accentBlue hover:bg-sky-700 text-white px-4 py-1.5 rounded-xl text-xs font-black shadow-sm">Next</button>
+        </div>
+
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <div class="flex items-center justify-between">
+                <h4 class="text-[11px] font-black text-slate-800 uppercase tracking-wider">Question Palette</h4>
+                <span class="text-[10px] text-slate-400">Tap to jump</span>
+            </div>
+            <div id="question-palette-10th" class="grid grid-cols-5 gap-1.5 max-h-48 overflow-y-auto pr-1"></div>
+            <button onclick="submitFinal10thQuiz()" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black py-2.5 rounded-xl shadow-md transition-all">SUBMIT TEST NOW</button>
+        </div>
+    `;
+
+    openDynamicPage("Class 10th Mathematics Test", testUIHTML, true);
+}
+
+window.render10thQuestion = function(index) {
+    const q = activeTestData10th.questions[index];
+    const totalQ = activeTestData10th.questions.length;
+    visitedQuestions10th[index] = true;
+    autoSave10thProgress();
+
+    document.getElementById("q10-badge").innerText = `Question ${index + 1} of ${totalQ}`;
+    document.getElementById("q10-text").innerHTML = q.question;
+
+    const container = document.getElementById("q10-options");
+    container.innerHTML = q.options.map((opt, optIdx) => `
+        <label onclick="select10thOption(${index}, ${optIdx})" class="flex items-center space-x-3 p-3 rounded-xl border transition-all cursor-pointer ${
+            userAnswers10th[index] === optIdx 
+            ? 'bg-emerald-50 border-emerald-600 text-emerald-800 font-black shadow-xs ring-1 ring-emerald-500'
+            : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold'
+        }">
+            <input type="radio" name="opt10" ${userAnswers10th[index] === optIdx ? 'checked' : ''} class="accent-emerald-600 w-4 h-4">
+            <span class="text-xs sm:text-sm">${String.fromCharCode(65 + optIdx)}) ${opt}</span>
+        </label>
+    `).join('');
+
+    document.getElementById("prev-10th-btn").disabled = (index === 0);
+    render10thPalette();
+};
+
+window.select10thOption = function(qIdx, optIdx) {
+    userAnswers10th[qIdx] = optIdx;
+    render10thQuestion(qIdx);
+};
+
+window.clear10thChoice = function() {
+    userAnswers10th[currentQuestionIndex10th] = null;
+    render10thQuestion(currentQuestionIndex10th);
+};
+
+window.navigate10thQuestion = function(step) {
+    const totalQ = activeTestData10th.questions.length;
+    currentQuestionIndex10th += step;
+    if (currentQuestionIndex10th < 0) currentQuestionIndex10th = 0;
+    if (currentQuestionIndex10th >= totalQ) currentQuestionIndex10th = totalQ - 1;
+    render10thQuestion(currentQuestionIndex10th);
+};
+
+window.jumpTo10thQuestion = function(index) {
+    currentQuestionIndex10th = index;
+    render10thQuestion(index);
+};
+
+window.render10thPalette = function() {
+    const palette = document.getElementById("question-palette-10th");
+    palette.innerHTML = activeTestData10th.questions.map((_, idx) => {
+        let btnStatusClass = "bg-slate-100 text-slate-600 border-slate-200";
+        if (userAnswers10th[idx] !== null) btnStatusClass = "bg-emerald-500 text-white border-emerald-600 font-black";
+        else if (visitedQuestions10th[idx]) btnStatusClass = "bg-amber-500 text-white border-amber-600";
+        if (idx === currentQuestionIndex10th) btnStatusClass += " ring-2 ring-sky-600 ring-offset-1";
+
+        return `<button onclick="jumpTo10thQuestion(${idx})" class="w-8 h-8 text-[11px] rounded-lg font-bold border flex items-center justify-center transition-all ${btnStatusClass}">${idx + 1}</button>`;
+    }).join('');
+};
+
+window.pause10thQuiz = function() {
+    if (timerInterval10th) clearInterval(timerInterval10th);
+    autoSave10thProgress();
+    alert("आपका टेस्ट पॉज़ (Pause) कर दिया गया है।");
+    closeDynamicPage();
+};
+
+window.start10thTimer = function() {
+    if (timerInterval10th) clearInterval(timerInterval10th);
+    const timerElem = document.getElementById("quiz-10th-timer");
+
+    timerInterval10th = setInterval(() => {
+        let mins = Math.floor(timeRemaining10th / 60);
+        let secs = timeRemaining10th % 60;
+        if (timerElem) {
+            timerElem.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        if (--timeRemaining10th < 0) {
+            clearInterval(timerInterval10th);
+            alert("समय समाप्त! 10th Class का टेस्ट ऑटो-सबमिट हो गया है।");
+            submitFinal10thQuiz();
+        }
+    }, 1000);
+};
+
+window.submitFinal10thQuiz = function() {
+    if (timerInterval10th) clearInterval(timerInterval10th);
+    localStorage.removeItem(STORAGE_KEY_10TH_PROGRESS);
+
+    let score = 0;
+    let correctCount = 0;
+    let wrongCount = 0;
+    let unattemptedCount = 0;
+    const totalQ = activeTestData10th.questions.length;
+
+    activeTestData10th.questions.forEach((q, idx) => {
+        const userAns = userAnswers10th[idx];
+        const isCorrect = (userAns === q.answer);
+        
+        if (userAns === null) unattemptedCount++;
+        else if (isCorrect) { score++; correctCount++; }
+        else wrongCount++;
+    });
+
+    const scoreHTML = `
+        <div class="bg-white p-5 rounded-3xl border border-rose-100 shadow-xl text-center space-y-4 my-auto">
+            <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-black">✓</div>
+            <h2 class="text-lg font-black text-slate-900">Test Result Summary</h2>
+            <p class="text-xs text-slate-500 font-bold">${activeTestData10th.title || "Class 10th Mathematics Test"}</p>
+            <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 space-y-0.5">
+                <div class="text-3xl font-black text-emerald-700">${score} / ${totalQ}</div>
+                <div class="text-[11px] font-bold text-slate-600">Total Score (${((score / totalQ) * 100).toFixed(1)}%)</div>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 text-xs font-bold">
+                <div class="bg-emerald-50 text-emerald-700 p-2 rounded-xl border border-emerald-200">Sahi: ${correctCount}</div>
+                <div class="bg-rose-50 text-rose-700 p-2 rounded-xl border border-rose-200">Galat: ${wrongCount}</div>
+                <div class="bg-slate-100 text-slate-700 p-2 rounded-xl border border-slate-200">Chhode: ${unattemptedCount}</div>
+            </div>
+            <button onclick="closeDynamicPage()" class="w-full bg-crimson text-white font-black py-3 rounded-xl shadow-md text-xs active:scale-95 transition-transform">Finish & Close</button>
+        </div>
+    `;
+    openDynamicPage("Scorecard Result", scoreHTML, true);
+};
+
+// ==========================================
 // 4. CLASS 9TH SCIENCE CHAPTER 1 PRACTICE TEST ENGINE
 // ==========================================
 const class9ScienceChapters = [
@@ -959,6 +1204,10 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (action === "open-9th-science-chapters") {
             openClass9ScienceChapters();
         }
+
+        else if (action === "open-10th-math-test") {
+                startBSEB10thMathTest();
+            }
         
         // Dynamic Chapter Quiz Trigger Action (CORRECTED LOCATION)
         else if (action === "open-chapter-quiz") {
