@@ -1,4 +1,4 @@
-// SelfStudyBook.com - Main Application JavaScript (Updated with Model Sets & Live Tests)
+// SelfStudyBook.com - Main Application JavaScript (Fixed & Updated)
 
 // ==========================================
 // 1. STORAGE KEYS & GLOBAL VARIABLES
@@ -21,10 +21,88 @@ const SCIENCE_10_PDF_URL = "https://storage.googleapis.com/selfstudybook-pdfs/PY
 let currentCh1Answers = new Array(20).fill(null);
 
 // ==========================================
+// GLOBAL UI HELPER FUNCTIONS (FIXED SCOPE)
+// ==========================================
+function showToast(message) {
+    const toastMessage = document.getElementById("toast-message");
+    const toastText = document.getElementById("toast-text");
+
+    if (!toastMessage || !toastText) {
+        console.log("Toast Notice:", message);
+        return;
+    }
+    toastText.innerText = message;
+    toastMessage.classList.remove("hidden");
+    setTimeout(() => toastMessage.classList.add("hidden"), 2500);
+}
+
+window.openDynamicPage = function(title, htmlContent, isNewFlow = false) {
+    if (isNewFlow) {
+        modalHistory = [];
+    }
+
+    modalHistory.push({ title, htmlContent });
+    renderCurrentModalState();
+};
+
+function renderCurrentModalState() {
+    const dynamicViewModal = document.getElementById("dynamic-view-modal");
+    const dynamicViewTitle = document.getElementById("dynamic-view-title");
+    const dynamicViewBody = document.getElementById("dynamic-view-body");
+
+    if (modalHistory.length === 0) {
+        closeDynamicPage();
+        return;
+    }
+
+    const current = modalHistory[modalHistory.length - 1];
+
+    let backHeaderHTML = "";
+    if (modalHistory.length > 1) {
+        backHeaderHTML = `
+            <div class="mb-3 border-b border-slate-100 pb-2">
+                <button onclick="goBackModalStep()" class="inline-flex items-center space-x-1.5 text-xs font-black text-crimson hover:text-rose-900 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 active:scale-95 transition-all">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    <span>वापस जाएँ (Back)</span>
+                </button>
+            </div>
+        `;
+    }
+
+    if (dynamicViewTitle) dynamicViewTitle.innerText = current.title;
+    if (dynamicViewBody) dynamicViewBody.innerHTML = backHeaderHTML + current.htmlContent;
+    if (dynamicViewModal) {
+        dynamicViewModal.classList.remove("hidden");
+        dynamicViewModal.classList.add("flex");
+    }
+    window.scrollTo(0, 0);
+    if (window.lucide) lucide.createIcons();
+}
+
+window.goBackModalStep = function() {
+    if (modalHistory.length > 1) {
+        modalHistory.pop();
+        renderCurrentModalState();
+    } else {
+        closeDynamicPage();
+    }
+};
+
+window.closeDynamicPage = function() {
+    const dynamicViewModal = document.getElementById("dynamic-view-modal");
+    if (timerInterval) clearInterval(timerInterval);
+    if (timerInterval10th) clearInterval(timerInterval10th);
+    modalHistory = [];
+    if (dynamicViewModal) {
+        dynamicViewModal.classList.add("hidden");
+        dynamicViewModal.classList.remove("flex");
+    }
+};
+
+// ==========================================
 // 2. HELPER & NAVIGATION PORTAL FUNCTIONS
 // ==========================================
 
-// Subject List Generator Helper
 function generateSubjectButtonsHTML(classNum) {
     const subjects = [
         { id: 'science', name: '1. विज्ञान (Science)', isScience: true },
@@ -143,18 +221,18 @@ function openTestsPortal() {
 function renderTestSubjects(classNum) {
     const pageTitle = `Live Test for Class ${classNum}th`;
     const subjects = [
-        { id: 'science', name: '1. विज्ञान (Science)' },
-        { id: 'math', name: '2. गणित (Mathematics)' },
-        { id: 'sst', name: '3. सामाजिक विज्ञान (Social Science)' },
-        { id: 'hindi', name: '4. हिंदी (Hindi)' },
-        { id: 'sanskrit', name: '5. संस्कृत (Sanskrit)' },
-        { id: 'english', name: '6. अंग्रेजी (English)' }
+        { id: 'math', name: '1. गणित (Mathematics)', action: classNum === 10 ? 'open-10th-math-test' : 'open-9th-math-test' },
+        { id: 'science', name: '2. विज्ञान (Science)', action: 'open-coming-soon-subject' },
+        { id: 'sst', name: '3. सामाजिक विज्ञान (Social Science)', action: 'open-coming-soon-subject' },
+        { id: 'hindi', name: '4. हिंदी (Hindi)', action: 'open-coming-soon-subject' },
+        { id: 'sanskrit', name: '5. संस्कृत (Sanskrit)', action: 'open-coming-soon-subject' },
+        { id: 'english', name: '6. अंग्रेजी (English)', action: 'open-coming-soon-subject' }
     ];
 
     let subjectsHTML = subjects.map(sub => `
-        <button data-action="open-coming-soon-subject" data-subject="${sub.name}" class="w-full text-left bg-white hover:bg-rose-50 border border-slate-200 p-3.5 rounded-2xl flex items-center justify-between shadow-xs active:scale-98 transition-all">
+        <button data-action="${sub.action}" data-subject="${sub.name}" class="w-full text-left bg-white hover:bg-rose-50 border border-slate-200 p-3.5 rounded-2xl flex items-center justify-between shadow-xs active:scale-98 transition-all">
             <span class="text-xs font-bold text-slate-800">${sub.name}</span>
-            <span class="text-[10px] text-amber-600 font-bold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">Jaldi Upload Hoga</span>
+            ${sub.action.includes('math') ? '<span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">Live Active</span>' : '<span class="text-[10px] text-amber-600 font-bold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">Jaldi Upload Hoga</span>'}
         </button>
     `).join('');
 
@@ -177,7 +255,7 @@ function showComingSoonModal(subjectName) {
             <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-2xl font-black">
                 <i data-lucide="clock" class="w-7 h-7"></i>
             </div>
-            <h2 class="text-base font-black text-slate-900">${subjectName}</h2>
+            <h2 class="text-base font-black text-slate-900">${subjectName || 'Subject'}</h2>
             <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
                 <p class="text-xs font-bold text-amber-900">जल्द ही अपलोड किया जाएगा!</p>
             </div>
@@ -209,7 +287,7 @@ function openPYQPortal() {
 }
 
 // ==========================================
-// 3. MATH MODEL SET QUIZ ENGINE
+// 3. MATH MODEL SET QUIZ ENGINE (CLASS 9TH)
 // ==========================================
 const testData = {
     title: "BSEB 9th Mathematics Model Set 1",
@@ -460,17 +538,15 @@ let currentQuestionIndex10th = 0;
 let timeRemaining10th = 30 * 60;
 let timerInterval10th = null;
 
-// JSON Path linked as per structure
 const CLASS_10TH_MATH_JSON_URL = "DATA/10th/math/10th_maths_25_ques.json";
 
 window.startBSEB10thMathTest = async function() {
     showToast("लोड हो रहा है, कृपया प्रतीक्षा करें...");
 
     try {
-        // Fast JSON Fetch from external path
         const response = await fetch(CLASS_10TH_MATH_JSON_URL, { cache: "force-cache" });
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`File nahi mili! HTTP Status: ${response.status}`);
         }
         activeTestData10th = await response.json();
         
@@ -499,7 +575,8 @@ window.startBSEB10thMathTest = async function() {
 
     } catch (error) {
         console.error("JSON Loading Failed:", error);
-    
+        showToast("Error: JSON File load nahi ho saki. Local Server ya path check karein.");
+        alert("Details: " + error.message);
     }
 };
 
@@ -724,49 +801,49 @@ const class9ScienceCh1Data = {
             question: "1. निम्नलिखित में से कौन-सा पदार्थ है?",
             options: ["स्नेह", "हवा", "नफरत", "विचार"],
             answer: 1,
-            explanation: "हवा का एक निश्चित द्रव्यमान होता है और यह स्थान घेरती है, इसलिए यह एक पदार्थ है। स्नेह, नफरत और विचार केवल भावनाएं हैं।"
+            explanation: "हवा का एक निश्चित द्रव्यमान होता है और यह स्थान घेरती है, इसलिए यह एक पदार्थ है।"
         },
         {
             id: 2,
             question: "2. पदार्थ के कणों के बीच क्या होता है?",
             options: ["केवल आकर्षण बल", "केवल प्रतिकर्षण बल", "रिक्त स्थान (अंतरआणविक स्थान)", "कोई स्थान नहीं होता"],
             answer: 2,
-            explanation: "पदार्थ के कणों के बीच सूक्ष्म रिक्त स्थान होता है, जिसे अंतरआणविक स्थान (Intermolecular space) कहते हैं।"
+            explanation: "पदार्थ के कणों के बीच सूक्ष्म रिक्त स्थान होता है, जिसे अंतरआणविक स्थान कहते हैं।"
         },
         {
             id: 3,
             question: "3. जिस ताप पर ठोस पिघलकर द्रव बन जाता है, वह क्या कहलाता है?",
             options: ["क्वथनांक (Boiling point)", "गलनांक (Melting point)", "संघनन (Condensation)", "हिमांक (Freezing point)"],
             answer: 1,
-            explanation: "जिस नियत तापमान पर कोई ठोस पदार्थ अवस्था परिवर्तन करके द्रव में बदलता है, उसे उस पदार्थ का गलनांक कहते हैं।"
+            explanation: "जिस नियत तापमान पर कोई ठोस द्रव में बदलता है, उसे उसका गलनांक कहते हैं।"
         },
         {
             id: 4,
             question: "4. पानी का क्वथनांक (Boiling point) केल्विन पैमाने पर कितना होता है?",
             options: ["273 K", "373 K", "100 K", "0 K"],
             answer: 1,
-            explanation: "पानी 100°C पर उबलता है। केल्विन में बदलने के लिए 100 + 273 = 373 K होता है।"
+            explanation: "पानी 100°C पर उबलता है। केल्विन में: 100 + 273 = 373 K।"
         },
         {
             id: 5,
             question: "5. 25°C को केल्विन पैमाने पर बदलने पर मान होगा—",
             options: ["298 K", "273 K", "300 K", "250 K"],
             answer: 0,
-            explanation: "K = °C + 273 => 25 + 273 = 298 K।"
+            explanation: "K = 25 + 273 = 298 K।"
         },
         {
             id: 6,
             question: "6. द्रव से गैस में बदलने की प्रक्रिया को क्या कहते हैं?",
-            options: ["वाष्पीकरण (Evaporation/Vaporization)", "ऊर्ध्वपातन (Sublimation)", "संघनन (Condensation)", "जमुना (Freezing)"],
+            options: ["वाष्पीकरण (Evaporation)", "ऊर्ध्वपातन (Sublimation)", "संघनन", "जमुना"],
             answer: 0,
-            explanation: "किसी द्रव का उसकी गैस अवस्था में परिवर्तित होना वाष्पीकरण या वाष्पन कहलाता है।"
+            explanation: "द्रव का गैस अवस्था में परिवर्तन वाष्पीकरण कहलाता है।"
         },
         {
             id: 7,
             question: "7. निम्नलिखित में से किसमें ऊर्ध्वपातन (Sublimation) का गुण पाया जाता है?",
             options: ["नमक", "कपूर (Camphor)", "चीनी", "जल"],
             answer: 1,
-            explanation: "कपूर बिना द्रव अवस्था में बदले सीधे ठोस से गैस बन जाता है, इसे ऊर्ध्वपातन कहते हैं।"
+            explanation: "कपूर सीधे ठोस से गैस बनता है, इसे ऊर्ध्वपातन कहते हैं।"
         },
         {
             id: 8,
@@ -778,96 +855,21 @@ const class9ScienceCh1Data = {
                 "इसमें से हवा पार नहीं होती"
             ],
             answer: 0,
-            explanation: "सूती कपड़ा पसीना सोखता है। पसीने के वाष्पीकरण के दौरान शरीर से गुप्त ऊष्मा निकलती है, जिससे ठंडक का अहसास होता है।"
+            explanation: "सूती कपड़े पसीना सोखकर वाष्पीकरण में मदद करते हैं।"
         },
         {
             id: 9,
-            question: "9. गैसों में विसरण (Diffusion) की दर ठोसों और द्रवों की तुलना में होती है—",
+            question: "9. गैसों में विसरण (Diffusion) की दर होती है—",
             options: ["बहुत कम", "बराबर", "बहुत अधिक", "शून्य"],
             answer: 2,
-            explanation: "गैस के कणों की गतिज ऊर्जा अधिक होती है और उनके बीच का स्थान बहुत अधिक होता है, इसलिए गैसों का विसरण सबसे तेज़ होता है।"
+            explanation: "गैस कणों की गतिज ऊर्जा अधिक होने के कारण विसरण सबसे तेज़ होता है।"
         },
         {
             id: 10,
             question: "10. ठोस कार्बन डाइऑक्साइड (CO₂) को किस नाम से जाना जाता है?",
             options: ["शुष्क बर्फ (Dry Ice)", "भारी जल", "सादा बर्फ", "तरल गैस"],
             answer: 0,
-            explanation: "उच्च दाब पर भंडारित ठोस CO₂ को शुष्क बर्फ (Dry Ice) कहा जाता है क्योंकि यह पिघले बिना सीधे गैस बनती है।"
-        },
-        {
-            id: 11,
-            question: "11. वाष्पीकरण की दर किस पर निर्भर करती है?",
-            options: ["सतह के क्षेत्रफल पर", "तापमान पर", "आर्द्रता और वायु की गति पर", "उपर्युक्त सभी पर"],
-            answer: 3,
-            explanation: "सतह का क्षेत्र, तापमान और हवा की गति बढ़ने पर वाष्पीकरण बढ़ता है, जबकि आर्द्रता बढ़ने पर यह घटता है।"
-        },
-        {
-            id: 12,
-            question: "12. सीधे ठोस से गैस बनने की क्रिया को क्या कहते हैं?",
-            options: ["वाष्पन", "ऊर्ध्वपातन (Sublimation)", "गलन", "संघनन"],
-            answer: 1,
-            explanation: "बिना द्रव अवस्था में बदले ठोस का सीधे गैस में बदलना ऊर्ध्वपातन कहलाता है।"
-        },
-        {
-            id: 13,
-            question: "13. आर्द्रता (Humidity) बढ़ने पर वाष्पीकरण की दर पर क्या प्रभाव पड़ता है?",
-            options: ["बढ़ती है", "घटती है", "कोई बदलाव नहीं होता", "पहले बढ़ती है फिर घटती है"],
-            answer: 1,
-            explanation: "हवा में पहले से जलवाष्प मौजूद होने (आर्द्रता) के कारण वाष्पीकरण की दर कम हो जाती है।"
-        },
-        {
-            id: 14,
-            question: "14. मटके (घड़े) का पानी गर्मियों में ठंडा क्यों रहता है?",
-            options: ["विसरण के कारण", "वाष्पीकरण के कारण", "संघनन के कारण", "अवशोषण के कारण"],
-            answer: 1,
-            explanation: "मिट्टी के मटके के सूक्ष्म छिद्रों से पानी बाहर आता रहता है और वाष्प बनता है। वाष्पीकरण के लिए ऊष्मा मटके के पानी से ली जाती है, जिससे पानी ठंडा होता है।"
-        },
-        {
-            id: 15,
-            question: "15. SI मात्रक प्रणाली में दाब (Pressure) का मात्रक क्या है?",
-            options: ["पास्कल (Pascal)", "न्यूटन", "केल्विन", "किलोग्राम"],
-            answer: 0,
-            explanation: "दाब का SI मात्रक पास्कल (Pa) होता है।"
-        },
-        {
-            id: 16,
-            question: "16. पदार्थ की किस अवस्था में कणों के बीच सबसे मजबूत आकर्षण बल होता है?",
-            options: ["ठोस (Solid)", "द्रव (Liquid)", "गैस (Gas)", "प्लाज्मा (Plasma)"],
-            answer: 0,
-            explanation: "ठोस अवस्था में कण बहुत पास-पास होते हैं, इसलिए उनके बीच का अंतराणुक आकर्षण बल सबसे अधिक होता है।"
-        },
-        {
-            id: 17,
-            question: "17. गुप्त ऊष्मा (Latent Heat) का क्या अर्थ है?",
-            options: [
-                "छुपी हुई ऊष्मा जो तापमान बदले बिना अवस्था परिवर्तन करती है",
-                "बहुत तेज गर्मी",
-                "ठंडी ऊष्मा",
-                "प्रकाश ऊर्जा"
-            ],
-            answer: 0,
-            explanation: "अवस्था परिवर्तन के दौरान जो ऊष्मा बिना तापमान बढ़ाए कणों के बीच के आकर्षण बल को तोड़ने में खर्च होती है, उसे गुप्त ऊष्मा कहते हैं।"
-        },
-        {
-            id: 18,
-            question: "18. गैस का द्रव में बदलना क्या कहलाता है?",
-            options: ["संघनन (Condensation)", "जमुना (Freezing)", "वाष्पीकरण", "पिघलना"],
-            answer: 0,
-            explanation: "गैस के ठंडा होकर द्रव अवस्था में बदलने की प्रक्रिया को संघनन कहते हैं।"
-        },
-        {
-            id: 19,
-            question: "19. पदार्थ की चौथी अवस्था (4th state of matter) किसे माना गया है?",
-            options: ["प्लाज्मा (Plasma)", "बोसे-आइंस्टीन कंडेन्सेट", "गैस", "द्रव"],
-            answer: 0,
-            explanation: "पदार्थ की पहली 3 अवस्थाएं (ठोस, द्रव, गैस) हैं और चौथी अवस्था 'प्लाज्मा' है, जो अत्यधिक ऊर्जा वाले आयनीकृत गैस के कणों से बनी होती है।"
-        },
-        {
-            id: 20,
-            question: "20. निम्नलिखित में से किसकी संपीड्यता (Compressibility) सबसे अधिक होती है?",
-            options: ["लोहे की छड़", "जल", "ऑक्सीजन गैस", "लकड़ी"],
-            answer: 2,
-            explanation: "गैसों के कणों के बीच बहुत अधिक रिक्त स्थान होता है, इसलिए गैसों को आसानी से दबाया (संपीडित) जा सकता है।"
+            explanation: "ठोस CO₂ को शुष्क बर्फ (Dry Ice) कहा जाता है।"
         }
     ]
 };
@@ -1066,81 +1068,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const sideMenuOverlay = document.getElementById("side-menu-overlay");
     const sideMenuContent = document.getElementById("side-menu-content");
     const closeMenuBtn = document.getElementById("close-menu-btn");
-    
-    const dynamicViewModal = document.getElementById("dynamic-view-modal");
-    const dynamicViewTitle = document.getElementById("dynamic-view-title");
-    const dynamicViewBody = document.getElementById("dynamic-view-body");
     const closeViewBtn = document.getElementById("close-view-btn");
-
-    const toastMessage = document.getElementById("toast-message");
-    const toastText = document.getElementById("toast-text");
-
-    function showToast(message) {
-        if (!toastMessage || !toastText) {
-            alert(message);
-            return;
-        }
-        toastText.innerText = message;
-        toastMessage.classList.remove("hidden");
-        setTimeout(() => toastMessage.classList.add("hidden"), 2500);
-    }
-
-    window.openDynamicPage = function(title, htmlContent, isNewFlow = false) {
-        if (isNewFlow) {
-            modalHistory = [];
-        }
-
-        modalHistory.push({ title, htmlContent });
-        renderCurrentModalState();
-    };
-
-    function renderCurrentModalState() {
-        if (modalHistory.length === 0) {
-            closeDynamicPage();
-            return;
-        }
-
-        const current = modalHistory[modalHistory.length - 1];
-
-        let backHeaderHTML = "";
-        if (modalHistory.length > 1) {
-            backHeaderHTML = `
-                <div class="mb-3 border-b border-slate-100 pb-2">
-                    <button onclick="goBackModalStep()" class="inline-flex items-center space-x-1.5 text-xs font-black text-crimson hover:text-rose-900 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 active:scale-95 transition-all">
-                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                        <span>वापस जाएँ (Back)</span>
-                    </button>
-                </div>
-            `;
-        }
-
-        if (dynamicViewTitle) dynamicViewTitle.innerText = current.title;
-        if (dynamicViewBody) dynamicViewBody.innerHTML = backHeaderHTML + current.htmlContent;
-        if (dynamicViewModal) {
-            dynamicViewModal.classList.remove("hidden");
-            dynamicViewModal.classList.add("flex");
-        }
-        window.scrollTo(0, 0);
-        if (window.lucide) lucide.createIcons();
-    }
-
-    window.goBackModalStep = function() {
-        if (modalHistory.length > 1) {
-            modalHistory.pop();
-            renderCurrentModalState();
-        } else {
-            closeDynamicPage();
-        }
-    };
-
-    window.closeDynamicPage = function() {
-        if (timerInterval) clearInterval(timerInterval);
-        modalHistory = [];
-        if (dynamicViewModal) {
-            dynamicViewModal.classList.add("hidden");
-            dynamicViewModal.classList.remove("flex");
-        }
-    };
 
     function openSideMenu() {
         if (!sideMenuOverlay || !sideMenuContent) return;
@@ -1154,14 +1082,13 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => sideMenuOverlay.classList.add("hidden"), 300);
     }
 
-    // MAIN CLICK EVENT DELEGATION FOR CLICK ACTIONS
+    // MAIN EVENT DELEGATION
     document.addEventListener("click", (e) => {
         const target = e.target.closest("[data-action]");
         if (!target) return;
 
         const action = target.getAttribute("data-action");
 
-        // Ribbon & Menu Portals
         if (action === "toggle-menu" || action === "open-menu") {
             openSideMenu();
         }
@@ -1174,24 +1101,18 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (action === "quick-pyq" || action === "open-pyq") {
             openPYQPortal();
         }
-
-        // Model Sets Actions
         else if (action === "open-10th-model-subjects") {
             renderModelSubjects(10);
         }
         else if (action === "open-9th-model-subjects") {
             renderModelSubjects(9);
         }
-
-        // Live Test Actions
         else if (action === "open-10th-test-subjects") {
             renderTestSubjects(10);
         }
         else if (action === "open-9th-test-subjects") {
             renderTestSubjects(9);
         }
-
-        // Chapterwise Practice Portal Actions
         else if (action === "open-chapterwise-practice") {
             openChapterwisePracticePortal();
         }
@@ -1204,24 +1125,19 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (action === "open-9th-science-chapters") {
             openClass9ScienceChapters();
         }
-
         else if (action === "open-10th-math-test") {
-                startBSEB10thMathTest();
-            }
-        
-        // Dynamic Chapter Quiz Trigger Action (CORRECTED LOCATION)
+            startBSEB10thMathTest();
+        }
         else if (action === "open-chapter-quiz") {
             const chapId = target.getAttribute("data-chapter-id");
             if (chapId === "1") {
-                currentCh1Answers = new Array(20).fill(null); // Reset Test State
+                currentCh1Answers = new Array(20).fill(null);
                 renderClass9Ch1PracticeTest();
             } else {
                 const chapName = target.getAttribute("data-chapter-name");
                 openChapterQuizPlaceholder(chapName);
             }
         }
-
-        // Miscellaneous Actions
         else if (action === "open-coming-soon-subject") {
             const subjectName = target.getAttribute("data-subject");
             showComingSoonModal(subjectName);
