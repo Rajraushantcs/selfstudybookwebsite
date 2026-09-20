@@ -1,0 +1,165 @@
+{
+  "class_9": {
+    "science": [
+      {
+        "id": "ch1",
+        "name": "हमारे आस-पास के पदार्थ",
+        "json_url": "DATA/9th/science/ch1_ques.json"
+      },
+      {
+        "id": "ch2",
+        "name": "क्या हमारे आस-पास के पदार्थ शुद्ध हैं",
+        "json_url": "DATA/9th/science/ch2_ques.json"
+      },
+      {
+        "id": "ch3",
+        "name": "परमाणु एवं अणु",
+        "json_url": "DATA/9th/science/ch3_ques.json"
+      },
+      {
+        "id": "ch4",
+        "name": "परमाणु की संरचना",
+        "json_url": "DATA/9th/science/ch4_ques.json"
+      },
+      {
+        "id": "ch5",
+        "name": "जीवन की मौलिक इकाई",
+        "json_url": "DATA/9th/science/ch5_ques.json"
+      },
+      {
+        "id": "ch6",
+        "name": "ऊतक",
+        "json_url": "DATA/9th/science/ch6_ques.json"
+      },
+      {
+        "id": "ch7",
+        "name": "जीवों में विविधता",
+        "json_url": "DATA/9th/science/ch7_ques.json"
+      },
+      {
+        "id": "ch8",
+        "name": "गति",
+        "json_url": "DATA/9th/science/ch8_ques.json"
+      },
+      {
+        "id": "ch9",
+        "name": "बल तथा गति के नियम",
+        "json_url": "DATA/9th/science/ch9_ques.json"
+      },
+      {
+        "id": "ch10",
+        "name": "गुरुत्वाकर्षण",
+        "json_url": "DATA/9th/science/ch10_ques.json"
+      },
+      {
+        "id": "ch11",
+        "name": "कार्य तथा ऊर्जा",
+        "json_url": "DATA/9th/science/ch11_ques.json"
+      },
+      {
+        "id": "ch12",
+        "name": "ध्वनि",
+        "json_url": "DATA/9th/science/ch12_ques.json"
+      },
+      {
+        "id": "ch13",
+        "name": "हम बीमार क्यों होते हैं",
+        "json_url": "DATA/9th/science/ch13_ques.json"
+      },
+      {
+        "id": "ch14",
+        "name": "प्राकृतिक संपदा",
+        "json_url": "DATA/9th/science/ch14_ques.json"
+      },
+      {
+        "id": "ch15",
+        "name": "खाद्य संसाधनों में सुधार",
+        "json_url": "DATA/9th/science/ch15_ques.json"
+      }
+    ]
+  },
+  "class_10": {
+    "science": [
+      {
+        "id": "ch1",
+        "name": "रासायनिक अभिक्रियाएँ एवं समीकरण",
+        "json_url": "DATA/10th/science/ch1_ques.json"
+      },
+      {
+        "id": "ch2",
+        "name": "अम्ल, क्षारक एवं लवण",
+        "json_url": "DATA/10th/science/ch2_ques.json"
+      },
+      {
+        "id": "ch3",
+        "name": "धातु एवं अधातु",
+        "json_url": "DATA/10th/science/ch3_ques.json"
+      },
+      {
+        "id": "ch4",
+        "name": "कार्बन एवं उसके यौगिक",
+        "json_url": "DATA/10th/science/ch4_ques.json"
+      },
+      {
+        "id": "ch5",
+        "name": "तत्त्वों का आवर्त वर्गीकरण",
+        "json_url": "DATA/10th/science/ch5_ques.json"
+      },
+      {
+        "id": "ch6",
+        "name": "जैव प्रक्रम",
+        "json_url": "DATA/10th/science/ch6_ques.json"
+      },
+      {
+        "id": "ch7",
+        "name": "नियंत्रण एवं समन्वय",
+        "json_url": "DATA/10th/science/ch7_ques.json"
+      },
+      {
+        "id": "ch8",
+        "name": "जीव जनन कैसे करते हैं?",
+        "json_url": "DATA/10th/science/ch8_ques.json"
+      },
+      {
+        "id": "ch9",
+        "name": "आनुवंशिकता एवं जैव विकास",
+        "json_url": "DATA/10th/science/ch9_ques.json"
+      },
+      {
+        "id": "ch10",
+        "name": "प्रकाश – परावर्तन तथा अपवर्तन",
+        "json_url": "DATA/10th/science/physics_10_chapter_1_ques.json"
+      },
+      {
+        "id": "ch11",
+        "name": "मानव नेत्र तथा रंगबिरंगा संसार",
+        "json_url": "DATA/10th/science/ch11_ques.json"
+      },
+      {
+        "id": "ch12",
+        "name": "विद्युत्",
+        "json_url": "DATA/10th/science/ch12.json"
+      },
+      {
+        "id": "ch13",
+        "name": "विद्युत् धारा के चुंबकीय प्रभाव",
+        "json_url": "DATA/10th/science/ch13_ques.json"
+      },
+      {
+        "id": "ch14",
+        "name": "ऊर्जा के स्रोत",
+        "json_url": "DATA/10th/science/ch14_ques.json"
+      },
+      {
+        "id": "ch15",
+        "name": "हमारा पर्यावरण",
+        "json_url": "DATA/10th/science/ch15_ques.json"
+      },
+      {
+        "id": "ch16",
+        "name": "प्राकृतिक संसाधनों का संपोषित प्रबंधन",
+        "json_url": "DATA/10th/science/ch16_ques.json"
+      }
+    ]
+  }
+}
