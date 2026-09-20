@@ -1,7 +1,9 @@
 // ==========================================
 // SECTION 1: CONFIG, CONSTANTS & GLOBAL STATE
 // ==========================================
-const MASTER_INDEX_URL = "DATA/chapters_index.json"; // 🟢 मास्टर JSON का पाथ (यहाँ सभी चैप्टर्स की लिस्ट होगी)
+const APP_VERSION = "1.0"; // 🟢 वर्ज़न कंट्रोल यहाँ सेट किया गया है
+
+const MASTER_INDEX_URL = "DATA/chapters_index.json"; // मास्टर JSON का पाथ (यहाँ सभी चैप्टर्स की लिस्ट होगी)
 
 const API_ENDPOINTS = {
     // Math के टेस्ट्स अभी भी सीधे यहीं से चलेंगे
@@ -19,7 +21,7 @@ const SCIENCE_10_PDF_URL = "https://storage.googleapis.com/selfstudybook-pdfs/PY
 // Global App State Variables
 let modalHistory = [];
 
-// 🟢 Universal Practice State (सभी चैप्टर्स के लिए एक ही इंजन)
+// Universal Practice State (सभी चैप्टर्स के लिए एक ही इंजन)
 let masterChapterIndex = null; 
 let currentPracticeData = null;
 let currentPracticeAnswers = [];
@@ -46,9 +48,10 @@ let timerInterval10th = null;
 // ==========================================
 async function loadMasterIndex() {
     try {
-        const res = await fetch(MASTER_INDEX_URL);
+        const fetchUrl = MASTER_INDEX_URL + "?v=" + APP_VERSION; // 🟢 वर्ज़न कंट्रोल यहाँ जोड़ा गया
+        const res = await fetch(fetchUrl);
         masterChapterIndex = await res.json();
-        console.log("Master Chapters Index Loaded Successfully");
+        console.log("Master Chapters Index Loaded Successfully v" + APP_VERSION);
     } catch (e) {
         console.error("Failed to load chapters_index.json. Please check if the file exists in DATA folder.", e);
     }
@@ -412,7 +415,8 @@ function openSubjectChapters(className, subjectKey) {
 // यूनिवर्सल क्विज़ रेंडरर (किसी भी JSON URL को लेगा और रेंडर करेगा)
 async function startUniversalPractice(jsonUrl, chapterTitle) {
     try {
-        const res = await fetch(jsonUrl);
+        const fetchUrl = jsonUrl + "?v=" + APP_VERSION; // 🟢 वर्ज़न कंट्रोल यहाँ जोड़ा गया
+        const res = await fetch(fetchUrl);
         if (!res.ok) throw new Error("Network response was not ok");
         const questions = await res.json();
         
@@ -531,7 +535,8 @@ function showChapterComingSoonModal(chapName) {
 // --- CLASS 9 MATH ENGINE ---
 window.startBSEB9thMathTest = async function() {
     try {
-        const response = await fetch(API_ENDPOINTS.MATH_9TH, { cache: "no-cache", headers: { "Accept": "application/json" } });
+        const fetchUrl9th = API_ENDPOINTS.MATH_9TH + "?v=" + APP_VERSION; // 🟢 वर्ज़न कंट्रोल यहाँ जोड़ा गया
+        const response = await fetch(fetchUrl9th, { headers: { "Accept": "application/json" } });
         const jsonData = await response.json();
         const questionsList = Array.isArray(jsonData) ? jsonData : (jsonData.questions || []);
 
@@ -740,7 +745,8 @@ window.submitFinalQuiz9th = function() {
 // --- CLASS 10 MATH ENGINE ---
 window.startBSEB10thMathTest = async function() {
     try {
-        const response = await fetch(API_ENDPOINTS.MATH_10TH, { cache: "force-cache" });
+        const fetchUrl10th = API_ENDPOINTS.MATH_10TH + "?v=" + APP_VERSION; // 🟢 वर्ज़न कंट्रोल यहाँ जोड़ा गया
+        const response = await fetch(fetchUrl10th);
         const jsonData = await response.json();
         activeTestData10th = Array.isArray(jsonData) ? { questions: jsonData, title: "10th Mathematics Model Set" } : jsonData;
 
@@ -766,7 +772,7 @@ window.startBSEB10thMathTest = async function() {
         render10thQuestion(currentQuestionIndex10th);
         start10thTimer();
     } catch (error) {
-        showToast("Error while JSON loading ");
+        showToast("Error: JSON File load nahi ho saki.");
     }
 };
 
