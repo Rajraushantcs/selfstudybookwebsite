@@ -1,7 +1,7 @@
 // ==========================================================================
 // SECTION 1: APP CONFIGURATION & GLOBAL STATE
 // ==========================================================================
-const APP_VERSION = "1.0"; // वर्ज़न कंट्रोल
+const APP_VERSION = "1.1"; // वर्ज़न कंट्रोल
 const MASTER_INDEX_URL = "DATA/chapters_index.json"; // मास्टर JSON पाथ
 
 const API_ENDPOINTS = {
