@@ -132,35 +132,44 @@
         <!-- ==========================================
              SECTION 4: HERO BANNER & INTRO
         ========================================== -->
-        <section class="relative bg-gradient-to-b from-white via-softPinkBg/60 to-rose-50/80 rounded-3xl p-6 border border-rose-100 shadow-sm text-center overflow-hidden">
-            <div class="absolute -top-10 -left-10 w-32 h-32 bg-rose-200/50 rounded-full blur-2xl pointer-events-none"></div>
+      <section class="relative bg-gradient-to-b from-white via-softPinkBg/60 to-rose-50/80 rounded-3xl p-6 border border-rose-100 shadow-sm text-center overflow-hidden">
+    <div class="absolute -top-10 -left-10 w-32 h-32 bg-rose-200/50 rounded-full blur-2xl pointer-events-none"></div>
 
-            <div class="inline-flex items-center space-x-1 bg-crimson text-white text-[10px] font-black px-3.5 py-1 rounded-full uppercase tracking-widest shadow-sm mb-4">
-                <i data-lucide="sparkles" class="w-3 h-3 text-rose-200"></i>
-                <span>SESSION 2026-27 ★ TARGET BOARD EXAM</span>
-            </div>
+    <div class="inline-flex items-center space-x-1 bg-crimson text-white text-[10px] font-black px-3.5 py-1 rounded-full uppercase tracking-widest shadow-sm mb-4">
+        <i data-lucide="sparkles" class="w-3 h-3 text-rose-200"></i>
+        <span>SESSION 2026-27 ★ TARGET BOARD EXAM</span>
+    </div>
 
-            <h2 class="text-2xl font-black text-slate-900 leading-tight tracking-tight">
-                सही किताब, सही तैयारी,<br>
-                <span class="bg-gradient-to-r from-crimson to-softPink bg-clip-text text-transparent">बेहतर भविष्य!</span>
-            </h2>
+    <h2 class="text-2xl font-black text-slate-900 leading-tight tracking-tight">
+        सही किताब, सही तैयारी,<br>
+        <span class="bg-gradient-to-r from-crimson to-softPink bg-clip-text text-transparent">बेहतर भविष्य!</span>
+    </h2>
 
-            <div class="mt-4 pt-3 border-t border-rose-200/60 inline-block px-6">
-                <p class="text-xs uppercase font-extrabold tracking-widest text-slate-400">Designed & Developed by</p>
-                <p class="text-base font-black text-crimson tracking-wide flex items-center justify-center space-x-1 mt-0.5">
-                    <span>RAJ RAUSHAN </span>
-                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 fill-emerald-100"></i>
-                </p>
-                <p class="text-[10px] text-slate-500 font-bold mt-0.5">(System Engineer • Teacher • Student's Friend & Motivator)</p>
-            </div>
+    <div class="mt-4 pt-3 border-t border-rose-200/60 inline-block px-6">
+        <p class="text-xs uppercase font-extrabold tracking-widest text-slate-400">Designed & Developed by</p>
+        <p class="text-base font-black text-crimson tracking-wide flex items-center justify-center space-x-1 mt-0.5">
+            <span>RAJ RAUSHAN </span>
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 fill-emerald-100"></i>
+        </p>
+        <p class="text-[10px] text-slate-500 font-bold mt-0.5">(System Engineer • Teacher • Student's Friend & Motivator)</p>
+    </div>
 
-            <div class="mt-6 pt-2 flex justify-center">
-                <button data-action="open-chapterwise-practice" class="w-full max-w-xs bg-crimson hover:bg-rose-900 text-white p-3.5 rounded-2xl font-black text-xs flex items-center justify-center space-x-2 shadow-md shadow-rose-200 active:scale-95 transition-transform border border-rose-800">
-                    <i data-lucide="play-circle" class="w-5 h-5"></i>
-                    <span>ऑनलाइन प्रैक्टिस करें</span>
-                </button>
-            </div>
-        </section>
+    <!-- 🟢 PYQ CHAPTERWISE BUTTON & PRACTICE BUTTONS 🟢 -->
+    <div class="mt-6 pt-2 flex flex-col items-center space-y-3 w-full max-w-xs mx-auto">
+        <!-- 1. नया PYQ Questions Chapter Wise बटन -->
+        <button data-action="open-pyq-chapterwise-portal" class="w-full bg-gradient-to-r from-amber-500 via-rose-600 to-crimson hover:from-amber-600 hover:to-rose-800 text-white p-3.5 rounded-2xl font-black text-xs flex items-center justify-center space-x-2 shadow-lg shadow-rose-300/50 active:scale-95 transition-all border border-rose-400/30 ring-2 ring-rose-200">
+            <i data-lucide="layers" class="w-5 h-5 text-amber-200 animate-pulse"></i>
+            <span class="tracking-wide">PYQ Questions V.V.I</span>
+            <span class="bg-amber-400 text-slate-900 text-[9px] font-black px-1.5 py-0.5 rounded-full ml-1">NEW</span>
+        </button>
+
+        <!-- 2. आपका पुराना ऑनलाइन प्रैक्टिस करें बटन -->
+        <button data-action="open-chapterwise-practice" class="w-full bg-crimson hover:bg-rose-900 text-white p-3.5 rounded-2xl font-black text-xs flex items-center justify-center space-x-2 shadow-md shadow-rose-200 active:scale-95 transition-transform border border-rose-800">
+            <i data-lucide="play-circle" class="w-5 h-5"></i>
+            <span>ऑनलाइन प्रैक्टिस करें</span>
+        </button>
+    </div>
+</section>
 
         <!-- ==========================================
              SECTION 5: FEATURED BOOKS LIST

@@ -1,12 +1,10 @@
-// ==========================================
-// SECTION 1: CONFIG, CONSTANTS & GLOBAL STATE
-// ==========================================
-const APP_VERSION = "1.0"; // 🟢 वर्ज़न कंट्रोल यहाँ सेट किया गया है
-
-const MASTER_INDEX_URL = "DATA/chapters_index.json"; // मास्टर JSON का पाथ (यहाँ सभी चैप्टर्स की लिस्ट होगी)
+// ==========================================================================
+// SECTION 1: APP CONFIGURATION & GLOBAL STATE
+// ==========================================================================
+const APP_VERSION = "1.0"; // वर्ज़न कंट्रोल
+const MASTER_INDEX_URL = "DATA/chapters_index.json"; // मास्टर JSON पाथ
 
 const API_ENDPOINTS = {
-    // Math के टेस्ट्स अभी भी सीधे यहीं से चलेंगे
     MATH_10TH: "DATA/10th/math/10th_maths_25_ques.json",
     MATH_9TH: "DATA/9th/math/9th_maths_25_ques.json"
 };
@@ -18,10 +16,10 @@ const STORAGE_KEYS = {
 
 const SCIENCE_10_PDF_URL = "https://storage.googleapis.com/selfstudybook-pdfs/PYQ/science_10_2025.pdf";
 
-// Global App State Variables
+// Global Modal History Stack
 let modalHistory = [];
 
-// Universal Practice State (सभी चैप्टर्स के लिए एक ही इंजन)
+// Universal Engine State
 let masterChapterIndex = null; 
 let currentPracticeData = null;
 let currentPracticeAnswers = [];
@@ -43,26 +41,26 @@ let visitedQuestions10th = [];
 let timeRemaining10th = 30 * 60;
 let timerInterval10th = null;
 
-// ==========================================
-// SECTION 2: FETCH MASTER INDEX ON LOAD
-// ==========================================
+
+// ==========================================================================
+// SECTION 2: MASTER INDEX LOADER
+// ==========================================================================
 async function loadMasterIndex() {
     try {
-        const fetchUrl = MASTER_INDEX_URL + "?v=" + APP_VERSION; // 🟢 वर्ज़न कंट्रोल यहाँ जोड़ा गया
+        const fetchUrl = MASTER_INDEX_URL + "?v=" + APP_VERSION;
         const res = await fetch(fetchUrl);
         masterChapterIndex = await res.json();
         console.log("Master Chapters Index Loaded Successfully v" + APP_VERSION);
     } catch (e) {
-        console.error("Failed to load chapters_index.json. Please check if the file exists in DATA folder.", e);
+        console.error("Failed to load chapters_index.json from DATA folder.", e);
     }
 }
-// पेज लोड होते ही मास्टर JSON लोड करें
 document.addEventListener("DOMContentLoaded", loadMasterIndex);
 
 
-// ==========================================
-// SECTION 3: UI & MODAL MANAGEMENT HELPERS
-// ==========================================
+// ==========================================================================
+// SECTION 3: CORE MODAL & SMART NAVIGATION ENGINE (BACK-BUTTON FIX)
+// ==========================================================================
 function showToast(message) {
     const toastMessage = document.getElementById("toast-message");
     const toastText = document.getElementById("toast-text");
@@ -73,9 +71,25 @@ function showToast(message) {
     setTimeout(() => toastMessage.classList.add("hidden"), 2500);
 }
 
-window.openDynamicPage = function(title, htmlContent, isNewFlow = false) {
-    if (isNewFlow) modalHistory = [];
-    modalHistory.push({ title, htmlContent });
+/**
+ * डायनामिक पेज खोलने या री-रेंडर करने का फ़ंक्शन
+ * @param {string} title - हेडर टाइटल
+ * @param {string} htmlContent - HTML स्ट्रिंग
+ * @param {boolean} isNewFlow - क्या यह नया फ्लो है (हिस्ट्री रीसेट)
+ * @param {boolean} isUpdate - क्या केवल वर्तमान पेज को रिफ्रेश करना है (बिना हिस्ट्री बढ़ाए)
+ */
+window.openDynamicPage = function(title, htmlContent, isNewFlow = false, isUpdate = false) {
+    if (isNewFlow) {
+        modalHistory = [];
+    }
+
+    if (isUpdate && modalHistory.length > 0) {
+        // 🟢 फिक्स: क्विज़ में ऑप्शन क्लिक करने पर यह नया स्टेप नहीं जोड़ेगा,
+        // जिससे बैक दबाने पर एक ही बार में चैप्टर लिस्ट खुलेगी।
+        modalHistory[modalHistory.length - 1] = { title, htmlContent };
+    } else {
+        modalHistory.push({ title, htmlContent });
+    }
     renderCurrentModalState();
 };
 
@@ -90,21 +104,10 @@ function renderCurrentModalState() {
     }
 
     const current = modalHistory[modalHistory.length - 1];
-    let backHeaderHTML = "";
-
-    if (modalHistory.length > 1) {
-        backHeaderHTML = `
-            <div class="mb-3 border-b border-slate-100 pb-2">
-                <button onclick="goBackModalStep()" class="inline-flex items-center space-x-1.5 text-xs font-black text-crimson hover:text-rose-900 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 active:scale-95 transition-all">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    <span>वापस जाएँ (Back)</span>
-                </button>
-            </div>
-        `;
-    }
 
     if (dynamicViewTitle) dynamicViewTitle.innerText = current.title;
-    if (dynamicViewBody) dynamicViewBody.innerHTML = backHeaderHTML + current.htmlContent;
+    if (dynamicViewBody) dynamicViewBody.innerHTML = current.htmlContent;
+    
     if (dynamicViewModal) {
         dynamicViewModal.classList.remove("hidden");
         dynamicViewModal.classList.add("flex");
@@ -114,6 +117,7 @@ function renderCurrentModalState() {
     if (window.lucide) lucide.createIcons();
 }
 
+// 🟢 स्टेप-बाय-स्टेप 1 स्तर पीछे जाने का ग्लोबल फ़ंक्शन
 window.goBackModalStep = function() {
     if (modalHistory.length > 1) {
         modalHistory.pop();
@@ -135,9 +139,9 @@ window.closeDynamicPage = function() {
 };
 
 
-// ==========================================
-// SECTION 4: NAVIGATION PORTALS & TEMPLATES
-// ==========================================
+// ==========================================================================
+// SECTION 4: DEFAULT MODEL SETS, LIVE TESTS & PYQ PORTALS
+// ==========================================================================
 function generateSubjectButtonsHTML(classNum) {
     const subjects = [
         { id: 'science', name: '1. विज्ञान (Science)', isScience: true },
@@ -165,7 +169,7 @@ function generateSubjectButtonsHTML(classNum) {
             return `
                 <button data-action="open-coming-soon-subject" data-subject="${sub.name}" class="w-full text-left bg-white hover:bg-rose-50 border border-slate-200 p-3.5 rounded-2xl flex items-center justify-between shadow-xs active:scale-98 transition-all">
                     <span class="text-xs font-bold text-slate-800">${sub.name}</span>
-                    <span class="text-[10px] text-amber-600 font-bold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">Jaldi Upload Hoga</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
                 </button>`;
         }
     }).join('');
@@ -258,7 +262,7 @@ function renderTestSubjects(classNum) {
     let subjectsHTML = subjects.map(sub => `
         <button data-action="${sub.action}" data-subject="${sub.name}" class="w-full text-left bg-white hover:bg-rose-50 border border-slate-200 p-3.5 rounded-2xl flex items-center justify-between shadow-xs active:scale-98 transition-all">
             <span class="text-xs font-bold text-slate-800">${sub.name}</span>
-            ${sub.action.includes('math') ? '<span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">Live Active</span>' : '<span class="text-[10px] text-amber-600 font-bold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">Jaldi Upload Hoga</span>'}
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
         </button>`).join('');
 
     const htmlContent = `
@@ -281,7 +285,7 @@ function showComingSoonModal(subjectName) {
             <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
                 <p class="text-xs font-bold text-amber-900">जल्द ही अपलोड किया जाएगा!</p>
             </div>
-            <p class="text-[11px] text-slate-500 font-medium">इस विषय के मॉडल सेट्स और लाइव टेस्ट पर काम चल रहा है, बहुत जल्द उपलब्ध होंगे।</p>
+            <p class="text-[11px] text-slate-500 font-medium">इस विषय की सामग्री पर कार्य चल रहा है, बहुत जल्द उपलब्ध होगी।</p>
             <button onclick="goBackModalStep()" class="w-full bg-crimson text-white font-black py-3 rounded-xl shadow-md text-xs active:scale-95 transition-transform">
                 वापस जाएं (Back)
             </button>
@@ -298,7 +302,7 @@ function openPYQPortal() {
         <div class="bg-amber-50 p-6 rounded-3xl border border-amber-200 text-center space-y-3">
             <i data-lucide="file-text" class="w-10 h-10 text-amber-600 mx-auto"></i>
             <h3 class="text-xs font-black text-amber-900">BSEB PYQ Question Bank Uploading...</h3>
-            <p class="text-[11px] text-slate-600">पिछले 5 सालों के प्रश्न पत्र का कलेक्शन जल्द उपलब्ध होगा।</p>
+            <p class="text-[11px] text-slate-600">पिछले वर्षों के प्रश्न पत्र का संग्रह जल्द उपलब्ध होगा।</p>
             <button onclick="goBackModalStep()" class="bg-amber-600 text-white font-black text-xs px-4 py-2 rounded-xl shadow-sm">
                 वापस जाएँ (Back)
             </button>
@@ -307,10 +311,9 @@ function openPYQPortal() {
 }
 
 
-// ==========================================
+// ==========================================================================
 // SECTION 5: 🟢 UNIVERSAL CHAPTERWISE PRACTICE ENGINE 🟢
-// ==========================================
-
+// ==========================================================================
 function openChapterwisePracticePortal() {
     const htmlContent = `
         <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm space-y-2 mb-3">
@@ -370,10 +373,9 @@ function renderChapterwiseSubjects(className, isClass9 = true) {
     openDynamicPage(`${className} Subjects`, pageHTML);
 }
 
-// मास्टर JSON से क्लास और सब्जेक्ट के अनुसार चैप्टर्स की लिस्ट दिखाना
 function openSubjectChapters(className, subjectKey) {
     if (!masterChapterIndex) {
-        loadMasterIndex(); // Retry loading if failed
+        loadMasterIndex();
         return;
     }
 
@@ -386,9 +388,7 @@ function openSubjectChapters(className, subjectKey) {
     const chapters = classData[subjectKey];
 
     let chaptersHTML = chapters.map((chap, index) => {
-        // अगर JSON URL मौजूद है, तो ओपन करने का एक्शन देंगे, नहीं तो 'chapter-coming-soon'
         const action = chap.json_url ? "open-universal-practice" : "chapter-coming-soon";
-        
         return `
         <button data-action="${action}" data-json-url="${chap.json_url}" data-chapter-name="${chap.name}" class="w-full text-left bg-white hover:bg-rose-50 border border-slate-200 hover:border-crimson p-3.5 rounded-2xl flex items-center justify-between shadow-xs active:scale-98 transition-all">
             <div class="flex items-center space-x-3">
@@ -397,7 +397,7 @@ function openSubjectChapters(className, subjectKey) {
                 </div>
                 <span class="text-xs font-bold text-slate-800 leading-snug">${chap.name}</span>
             </div>
-            <i data-lucide="${chap.json_url ? 'arrow-right-circle' : 'lock'}" class="w-4 h-4 ${chap.json_url ? 'text-crimson' : 'text-slate-400'} flex-none ml-2"></i>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 flex-none ml-2"></i>
         </button>`;
     }).join("");
 
@@ -412,27 +412,25 @@ function openSubjectChapters(className, subjectKey) {
     openDynamicPage(`Class ${className} ${subjectKey}`, pageHTML);
 }
 
-// यूनिवर्सल क्विज़ रेंडरर (किसी भी JSON URL को लेगा और रेंडर करेगा)
 async function startUniversalPractice(jsonUrl, chapterTitle) {
     try {
-        const fetchUrl = jsonUrl + "?v=" + APP_VERSION; // 🟢 वर्ज़न कंट्रोल यहाँ जोड़ा गया
+        const fetchUrl = jsonUrl + "?v=" + APP_VERSION;
         const res = await fetch(fetchUrl);
         if (!res.ok) throw new Error("Network response was not ok");
         const questions = await res.json();
         
-        // State Reset
         currentPracticeData = questions;
         currentPracticeTitle = chapterTitle;
         currentPracticeAnswers = new Array(questions.length).fill(null);
         
-        renderUniversalPracticeUI();
+        renderUniversalPracticeUI(false);
     } catch (e) {
-        showToast("Please try later..");
+        showToast("कृपया बाद में प्रयास करें...");
         console.error("Universal Practice Load Error:", e);
     }
 }
 
-function renderUniversalPracticeUI() {
+function renderUniversalPracticeUI(isUpdate = false) {
     let questionsHTML = currentPracticeData.map((q, qIdx) => {
         const selectedOpt = currentPracticeAnswers[qIdx];
         const isAnswered = selectedOpt !== null;
@@ -440,10 +438,9 @@ function renderUniversalPracticeUI() {
         let optionsList = [];
         let correctAnswerIndex = -1;
 
-        // हैंडल Array Options vs Object Options (JSON structure compatibility)
         if (Array.isArray(q.options)) {
              optionsList = q.options;
-             correctAnswerIndex = q.answer; // Assuming numeric index
+             correctAnswerIndex = q.answer;
         } else if (typeof q.options === 'object') {
              optionsList = Object.values(q.options);
              const keys = Object.keys(q.options);
@@ -464,7 +461,7 @@ function renderUniversalPracticeUI() {
             }
 
             return `
-                <button onclick="handleUniversalOptionSelect(${qIdx}, ${optIdx})" ${isAnswered ? 'disabled' : ''} class="w-full text-left p-3 rounded-xl border text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-between ${btnStyle}">
+                <button onclick="handleUniversalOptionSelect(${qIdx}, ${optIdx})" ${isAnswered ? 'disabled' : ''} class="w-full text-left p-3.5 rounded-xl border text-sm sm:text-base font-medium transition-all duration-200 flex items-center justify-between ${btnStyle}">
                     <span>${String.fromCharCode(65 + optIdx)}) ${optText}</span>
                     ${isAnswered && optIdx === correctAnswerIndex ? '<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 flex-none"></i>' : ''}
                     ${isAnswered && selectedOpt === optIdx && selectedOpt !== correctAnswerIndex ? '<i data-lucide="x-circle" class="w-4 h-4 text-rose-600 flex-none"></i>' : ''}
@@ -480,15 +477,15 @@ function renderUniversalPracticeUI() {
                         <i data-lucide="${isCorrect ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i>
                         <span>${isCorrect ? 'सही उत्तर!' : `गलत उत्तर! सही विकल्प (${String.fromCharCode(65 + correctAnswerIndex)}) है।`}</span>
                     </div>
-                    <p class="text-[11px] font-bold text-slate-700 leading-relaxed pt-0.5">
-                        <span class="font-black text-slate-900">व्याख्या:</span> ${q.explanation || "कोई व्याख्या उपलब्ध नहीं है।"}
+                    <p class="text-xs sm:text-sm font-medium text-slate-800 leading-relaxed pt-0.5">
+                        <span class="font-bold text-slate-900">व्याख्या:</span> ${q.explanation || "कोई व्याख्या उपलब्ध नहीं है।"}
                     </p>
                 </div>`;
         }
 
         return `
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3 mb-4">
-                <h3 class="text-xs sm:text-sm font-bold text-slate-900 leading-relaxed">Q${qIdx + 1}. ${q.question}</h3>
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 mb-4">
+                <h3 class="text-sm sm:text-base font-bold text-slate-900 leading-relaxed">Q${qIdx + 1}. ${q.question}</h3>
                 <div class="space-y-2">${optionsHTML}</div>
                 ${explanationHTML}
             </div>`;
@@ -501,12 +498,12 @@ function renderUniversalPracticeUI() {
         </div>
         <div class="pb-6">${questionsHTML}</div>`;
 
-    openDynamicPage("Practice Test", pageContent);
+    openDynamicPage("Practice Test", pageContent, false, isUpdate);
 }
 
 window.handleUniversalOptionSelect = function(qIdx, optIdx) {
     currentPracticeAnswers[qIdx] = optIdx;
-    renderUniversalPracticeUI(); // Re-render to show answers
+    renderUniversalPracticeUI(true);
 };
 
 function showChapterComingSoonModal(chapName) {
@@ -519,7 +516,7 @@ function showChapterComingSoonModal(chapName) {
             <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
                 <p class="text-xs font-bold text-amber-900">जल्द ही प्रैक्टिस Questions अपलोड किए जाएंगे!</p>
             </div>
-            <p class="text-[11px] text-slate-500 font-medium">इस चैप्टर के प्रश्न उत्तर और ऑनलाइन टेस्ट पर काम चल रहा है।</p>
+            <p class="text-[11px] text-slate-500 font-medium">इस चैप्टर के प्रश्न उत्तर और ऑनलाइन टेस्ट पर कार्य चल रहा है।</p>
             <button onclick="goBackModalStep()" class="w-full bg-crimson text-white font-black py-3 rounded-xl shadow-md text-xs active:scale-95 transition-transform">
                 वापस जाएं (Back)
             </button>
@@ -528,14 +525,14 @@ function showChapterComingSoonModal(chapName) {
 }
 
 
-// ==========================================
-// SECTION 6: MATH TEST ENGINES (CLASS 9 & 10)
-// ==========================================
+// ==========================================================================
+// SECTION 6: MATHEMATICS TIMED TESTS (CLASS 9 & 10)
+// ==========================================================================
 
 // --- CLASS 9 MATH ENGINE ---
 window.startBSEB9thMathTest = async function() {
     try {
-        const fetchUrl9th = API_ENDPOINTS.MATH_9TH + "?v=" + APP_VERSION; // 🟢 वर्ज़न कंट्रोल यहाँ जोड़ा गया
+        const fetchUrl9th = API_ENDPOINTS.MATH_9TH + "?v=" + APP_VERSION;
         const response = await fetch(fetchUrl9th, { headers: { "Accept": "application/json" } });
         const jsonData = await response.json();
         const questionsList = Array.isArray(jsonData) ? jsonData : (jsonData.questions || []);
@@ -563,7 +560,7 @@ window.startBSEB9thMathTest = async function() {
         renderQuestion9th(currentQuestionIndex9th);
         startTimer9th();
     } catch (error) {
-        showToast("Something went wrong..");
+        showToast("Error loading 9th math test.");
     }
 };
 
@@ -745,7 +742,7 @@ window.submitFinalQuiz9th = function() {
 // --- CLASS 10 MATH ENGINE ---
 window.startBSEB10thMathTest = async function() {
     try {
-        const fetchUrl10th = API_ENDPOINTS.MATH_10TH + "?v=" + APP_VERSION; // 🟢 वर्ज़न कंट्रोल यहाँ जोड़ा गया
+        const fetchUrl10th = API_ENDPOINTS.MATH_10TH + "?v=" + APP_VERSION;
         const response = await fetch(fetchUrl10th);
         const jsonData = await response.json();
         activeTestData10th = Array.isArray(jsonData) ? { questions: jsonData, title: "10th Mathematics Model Set" } : jsonData;
@@ -937,9 +934,9 @@ window.submitFinal10thQuiz = function() {
 };
 
 
-// ==========================================
-// SECTION 7: EVENT LISTENERS & ROUTING
-// ==========================================
+// ==========================================================================
+// SECTION 7: GLOBAL EVENT LISTENERS & ROUTING
+// ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
     if (window.lucide) lucide.createIcons();
 
@@ -985,7 +982,6 @@ document.addEventListener("DOMContentLoaded", () => {
             case "open-10th-math-test": startBSEB10thMathTest(); break;
             case "open-9th-math-test": startBSEB9thMathTest(); break;
             
-            // 🟢 DYNAMIC UNIVERSAL ROUTING 🟢
             case "open-9th-science-chapters":
                 openSubjectChapters("9", "science");
                 break;
@@ -996,7 +992,7 @@ document.addEventListener("DOMContentLoaded", () => {
             case "open-universal-practice":
                 const jsonUrl = target.getAttribute("data-json-url");
                 const chapterName = target.getAttribute("data-chapter-name");
-                if(jsonUrl && jsonUrl !== "null" && jsonUrl !== "") {
+                if (jsonUrl && jsonUrl !== "null" && jsonUrl !== "") {
                     startUniversalPractice(jsonUrl, chapterName);
                 }
                 break;
@@ -1019,10 +1015,341 @@ document.addEventListener("DOMContentLoaded", () => {
             case "subject-coming-soon":
                 showToast("यह विषय बहुत जल्द अपलोड किया जाएगा!");
                 break;
+            case "open-pyq-chapterwise-portal":
+                openPYQSubjectsPortal();
+                break;
         }
     });
 
     if (closeMenuBtn) closeMenuBtn.addEventListener("click", closeSideMenu);
     if (sideMenuOverlay) sideMenuOverlay.addEventListener("click", (e) => { if (e.target === sideMenuOverlay) closeSideMenu(); });
-    if (closeViewBtn) closeViewBtn.addEventListener("click", closeDynamicPage);
+    
+    // 🟢 टॉप हेडर बैक बटन: सीधे 1 स्तर पीछे ले जाएगा
+    if (closeViewBtn) closeViewBtn.addEventListener("click", () => {
+        goBackModalStep();
+    });
 });
+
+
+// ==========================================================================
+// SECTION 8: 🟣 PYQ CHAPTERWISE PORTAL (CLEAN & MODULAR)
+// ==========================================================================
+
+// 8.1: छह प्रमुख विषयों और अध्यायों का मास्टर कॉन्फिगरेशन
+const PYQ_MASTER_SUBJECTS = [
+    {
+        id: "science",
+        name: "विज्ञान (Science)",
+        subtext: "Physics, Chemistry & Biology PYQs",
+        icon: "flask-conical",
+        theme: "from-blue-600 to-indigo-700",
+        border: "border-blue-200",
+        chapters: [
+            { id: 1, name: "1. रासायनिक अभिक्रियाएँ एवं समीकरण", json_url: "DATA/10th/science/ch1_ques.json" },
+    { id: 2, name: "2. अम्ल, क्षारक एवं लवण", json_url: "DATA/10th/science/ch2_ques.json" },
+    { id: 3, name: "3. धातु एवं अधातु", json_url: "DATA/10th/science/ch3_ques.json" },
+    { id: 4, name: "4. कार्बन एवं उसके यौगिक", json_url: "DATA/10th/science/ch4_ques.json" },
+    { id: 5, name: "5. तत्वों का आवर्त वर्गीकरण", json_url: "DATA/10th/science/ch5_ques.json" },
+    { id: 6, name: "6. जैव प्रक्रम", json_url: "DATA/10th/science/ch6_ques.json" },
+    { id: 7, name: "7. नियंत्रण एवं समन्वय", json_url: "DATA/10th/science/ch7_ques.json" },
+    { id: 8, name: "8. जीव जनन कैसे करते हैं?", json_url: "DATA/10th/science/ch8_ques.json" },
+    { id: 9, name: "9. आनुवंशिकता एवं जैव विकास", json_url: "DATA/10th/science/ch9_ques.json" },
+    { id: 10, name: "10. प्रकाश - परावर्तन तथा अपवर्तन", json_url: "DATA/10th/science/ch10_ques.json" },
+    { id: 11, name: "11. मानव नेत्र तथा रंगबिरंगा संसार", json_url: "DATA/10th/science/ch11_ques.json" },
+    { id: 12, name: "12. विद्युत", json_url: "DATA/10th/science/ch12_ques.json" },
+    { id: 13, name: "13. विद्युत धारा के चुंबकीय प्रभाव", json_url: "DATA/10th/science/ch13_ques.json" },
+    { id: 14, name: "14. ऊर्जा के स्रोत", json_url: "DATA/10th/science/ch14_ques.json" },
+    { id: 15, name: "15. हमारा पर्यावरण", json_url: "DATA/10th/science/ch15_ques.json" },
+    { id: 16, name: "16. प्राकृतिक संसाधनों का प्रबंधन", json_url: "DATA/10th/science/ch16_ques.json" }
+        ]
+    },
+    {
+        id: "hindi",
+        name: "हिंदी (Hindi - गोधूलि)",
+        subtext: "गद्यखंड एवं पद्यखंड PYQs",
+        icon: "book-open",
+        theme: "from-rose-600 to-crimson",
+        border: "border-rose-200",
+        chapters: [
+            { id: 1, name: "1. श्रम विभाजन और जाति प्रथा", json_url: "DATA/10th/hindi/ch1.json" },
+            { id: 2, name: "2. विष के दाँत", json_url: "DATA/10th/hindi/ch2.json" },
+            { id: 3, name: "3. भारत से हम क्या सीखें", json_url: "DATA/10th/hindi/ch3.json" },
+            { id: 4, name: "4. नाखून क्यों बढ़ते हैं", json_url: "DATA/10th/hindi/ch4.json" },
+            { id: 5, name: "5. नागरी लिपि", json_url: "DATA/10th/hindi/ch5.json" },
+            { id: 6, name: "6. बहादुर", json_url: "DATA/10th/hindi/ch6.json" },
+            { id: 7, name: "7. परम्परा का मूल्यांकन", json_url: "DATA/10th/hindi/ch7.json" },
+            { id: 8, name: "8. जित-जित मैं निरखत हूँ", json_url: "DATA/10th/hindi/ch8.json" },
+            { id: 9, name: "9. आविन्यों", json_url: "DATA/10th/hindi/ch9.json" },
+            { id: 10, name: "10. मछली", json_url: "DATA/10th/hindi/ch10.json" },
+            { id: 11, name: "11. नौबतखाने में इबादत", json_url: "DATA/10th/hindi/ch10.json" },
+            { id: 12, name: "12. शिक्षा और संस्कृति", json_url: null }
+        ]
+    },
+    {
+        id: "math",
+        name: "गणित (Mathematics)",
+        subtext: "वास्तविक संख्याएँ, त्रिकोणमिति आदि",
+        icon: "calculator",
+        theme: "from-emerald-600 to-teal-700",
+        border: "border-emerald-200",
+        chapters: []
+    },
+    {
+        id: "sst",
+        name: "सामाजिक विज्ञान (Social Science)",
+        subtext: "इतिहास, भूगोल, राजनीति, अर्थशास्त्र",
+        icon: "globe",
+        theme: "from-amber-600 to-orange-700",
+        border: "border-amber-200",
+        chapters: []
+    },
+    {
+        id: "sanskrit",
+        name: "संस्कृत (Sanskrit - पीयूषम)",
+        subtext: "मंगलम्, पाटलिपुत्रवैभवम् आदि",
+        icon: "scroll",
+        theme: "from-purple-600 to-indigo-800",
+        border: "border-purple-200",
+        chapters: []
+    },
+    {
+        id: "english",
+        name: "अंग्रेजी (English - Panorama)",
+        subtext: "Prose & Poetry Section",
+        icon: "languages",
+        theme: "from-cyan-600 to-blue-700",
+        border: "border-cyan-200",
+        chapters: []
+    }
+];
+
+// 8.2: 6 विषयों का सुंदर ग्रिड (बिना किसी 'उपलब्ध' या 'शीघ्र' बैज के - पूर्णतः न्यूट्रल)
+function openPYQSubjectsPortal() {
+    let subjectsHTML = PYQ_MASTER_SUBJECTS.map((sub) => {
+        return `
+        <button onclick="handlePYQSubjectClick('${sub.id}')" class="w-full text-left bg-white hover:bg-rose-50/50 p-4 rounded-2xl border ${sub.border} shadow-sm active:scale-98 transition-all flex items-center justify-between group">
+            <div class="flex items-center space-x-3.5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${sub.theme} text-white flex items-center justify-center font-black text-sm shadow-md group-hover:scale-105 transition-transform">
+                    <i data-lucide="${sub.icon}" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-900 group-hover:text-crimson transition-colors">${sub.name}</h4>
+                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">${sub.subtext}</p>
+                </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-crimson group-hover:translate-x-0.5 transition-all"></i>
+        </button>`;
+    }).join("");
+
+    const pageHTML = `
+        <div class="bg-gradient-to-r from-crimson via-rose-800 to-rose-900 text-white p-4 rounded-2xl shadow-md space-y-1 mb-3">
+            <span class="bg-white/20 text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">BSEB Class 10th Special</span>
+            <h2 class="text-base font-black">पिछले वर्षों के प्रश्न (PYQ Chapter Wise)</h2>
+            <p class="text-[11px] text-rose-100 font-medium">प्रैक्टिस करने के लिए अपना पसंदीदा विषय चुनें:</p>
+        </div>
+        <div class="space-y-2.5">${subjectsHTML}</div>`;
+
+    openDynamicPage("PYQ Subjects", pageHTML, true);
+}
+
+// 8.3: सब्जेक्ट क्लिक हैंडलर (क्लिक पर ही जांच होगी)
+window.handlePYQSubjectClick = function(subjectId) {
+    const subject = PYQ_MASTER_SUBJECTS.find(s => s.id === subjectId);
+    if (!subject) return;
+
+    if (!subject.chapters || subject.chapters.length === 0) {
+        showPYQSubjectPendingWarning(subject.name);
+        return;
+    }
+
+    renderPYQChaptersList(subject);
+};
+
+// 8.4: सब्जेक्ट पेंडिंग अलर्ट
+function showPYQSubjectPendingWarning(subjectName) {
+    const htmlContent = `
+        <div class="bg-white p-6 rounded-3xl border border-rose-100 shadow-xl text-center space-y-4 my-auto">
+            <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+            </div>
+            <div>
+                <span class="bg-amber-100 text-amber-800 text-[10px] font-black px-3 py-1 rounded-full uppercase">Under Preparation</span>
+                <h2 class="text-base font-black text-slate-900 mt-2">${subjectName}</h2>
+            </div>
+            <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 text-left space-y-1">
+                <p class="text-xs font-black text-amber-900 flex items-center space-x-1.5">
+                    <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
+                    <span>जल्द ही अपलोड की जाएगी!</span>
+                </p>
+                <p class="text-[11px] text-slate-600 font-medium">
+                    इस विषय के पिछले वर्षों के सभी महत्वपूर्ण प्रश्नों (PYQs) को तैयार किया जा रहा है। बहुत जल्द यह विद्यार्थियों के लिए उपलब्ध होगा।
+                </p>
+            </div>
+            <button onclick="goBackModalStep()" class="w-full bg-crimson hover:bg-rose-900 text-white font-black py-3 rounded-xl shadow-md text-xs active:scale-95 transition-transform">
+                ← वापस विषयों की सूची पर जाएँ
+            </button>
+        </div>`;
+    openDynamicPage("सूचना (Notification)", htmlContent);
+}
+
+// 8.5: चैप्टर्स की लिस्ट (एक समान व साफ़ डिज़ाइन - बिना किसी 'MCQ उपलब्ध' बैज के)
+function renderPYQChaptersList(subject) {
+    let chaptersHTML = subject.chapters.map((chap, idx) => {
+        const isReady = chap.json_url !== null && chap.json_url !== "";
+        return `
+        <button onclick="${isReady ? `loadPYQQuizJSON('${chap.json_url}', '${chap.name}')` : `showPYQChapterPendingWarning('${chap.name}')`}" 
+                class="w-full text-left bg-white hover:bg-rose-50/50 p-4 rounded-2xl border border-slate-200 hover:border-crimson shadow-xs active:scale-98 transition-all flex items-center justify-between group">
+            <div class="flex items-center space-x-3.5">
+                <div class="w-8 h-8 rounded-xl bg-rose-100 text-crimson font-black text-xs flex items-center justify-center flex-none">
+                    ${idx + 1}
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-900 group-hover:text-crimson leading-snug">${chap.name}</h4>
+                </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-crimson group-hover:translate-x-0.5 transition-transform flex-none ml-2"></i>
+        </button>`;
+    }).join("");
+
+    const pageHTML = `
+        <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm space-y-1 mb-3">
+            <span class="bg-rose-100 text-crimson text-[10px] font-black px-2.5 py-0.5 rounded-full">${subject.name}</span>
+            <h2 class="text-base font-black text-slate-900">अध्याय सूची (Chapter List)</h2>
+            <p class="text-[11px] text-slate-500 font-bold">प्रश्नों का अभ्यास करने के लिए किसी भी अध्याय पर क्लिक करें:</p>
+        </div>
+        <div class="space-y-2.5 pb-6">${chaptersHTML}</div>`;
+
+    openDynamicPage(`${subject.name} - Chapters`, pageHTML);
+}
+
+// 8.6: चैप्टर पेंडिंग अलर्ट
+function showPYQChapterPendingWarning(chapName) {
+    const htmlContent = `
+        <div class="bg-white p-6 rounded-3xl border border-rose-100 shadow-xl text-center space-y-4 my-auto">
+            <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-2xl font-black">
+                <i data-lucide="clock" class="w-7 h-7"></i>
+            </div>
+            <h2 class="text-base font-black text-slate-900">${chapName}</h2>
+            <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                <p class="text-xs font-bold text-amber-900">इस अध्याय का PYQ जल्द ही अपलोड किया जाएगा!</p>
+            </div>
+            <p class="text-[11px] text-slate-500 font-medium">हमारी टीम पिछले वर्षों के प्रश्नों का विश्लेषण कर रही है, बहुत जल्द यह उपलब्ध होगा।</p>
+            <button onclick="goBackModalStep()" class="w-full bg-crimson text-white font-black py-3 rounded-xl shadow-md text-xs active:scale-95 transition-transform">
+                ← वापस अध्याय सूची पर जाएँ
+            </button>
+        </div>`;
+    openDynamicPage("शीघ्र उपलब्ध", htmlContent);
+}
+
+// 8.7: चैप्टर JSON लोड करना
+window.loadPYQQuizJSON = async function(jsonUrl, chapterTitle) {
+    try {
+        const fetchUrl = jsonUrl + "?v=" + APP_VERSION;
+        const res = await fetch(fetchUrl);
+        if (!res.ok) throw new Error("JSON Fetch Failed");
+        const questions = await res.json();
+
+        currentPracticeData = questions;
+        currentPracticeTitle = chapterTitle;
+        currentPracticeAnswers = new Array(questions.length).fill(null);
+
+        // पहली बार क्विज़ खोलते समय isUpdate = false रहेगा
+        renderPYQQuizUI(false);
+    } catch (e) {
+        showToast("यह चैप्टर फ़ाइल लोड नहीं हो सकी।");
+        console.error("PYQ Quiz Load Error:", e);
+    }
+};
+
+// 8.8: क्विज़ का इंटरेक्टिव UI (बड़ा फ़ॉन्ट + इन-प्लेस अपडेट)
+function renderPYQQuizUI(isUpdate = false) {
+    let questionsHTML = currentPracticeData.map((q, qIdx) => {
+        const selectedOpt = currentPracticeAnswers[qIdx];
+        const isAnswered = selectedOpt !== null;
+
+        let optionsList = [];
+        let correctAnswerKey = "";
+
+        if (Array.isArray(q.options)) {
+            optionsList = q.options;
+            correctAnswerKey = q.answer;
+        } else if (typeof q.options === 'object') {
+            optionsList = Object.entries(q.options);
+            correctAnswerKey = q.correct_answer;
+        }
+
+        let yearsBadgeHTML = "";
+        if (q.years && Array.isArray(q.years) && q.years.length > 0) {
+            yearsBadgeHTML = `
+                <div class="flex items-center space-x-1">
+                    <span class="text-[10px] sm:text-xs font-black text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full flex items-center space-x-1">
+                        <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                        <span>BSEB ${q.years.join(', ')}</span>
+                    </span>
+                </div>`;
+        }
+
+        let optionsHTML = optionsList.map(([key, optText]) => {
+            let btnStyle = "bg-white border-slate-200 text-slate-800 hover:bg-slate-50";
+
+            if (isAnswered) {
+                if (key.toLowerCase() === correctAnswerKey.toLowerCase()) {
+                    btnStyle = "bg-emerald-100 border-emerald-600 text-emerald-900 font-black ring-2 ring-emerald-500";
+                } else if (selectedOpt === key) {
+                    btnStyle = "bg-rose-100 border-rose-600 text-rose-900 font-bold ring-2 ring-rose-500";
+                } else {
+                    btnStyle = "bg-slate-50 border-slate-200 text-slate-400 opacity-60";
+                }
+            }
+
+            return `
+                <button onclick="handlePYQOptionSelect(${qIdx}, '${key}')" ${isAnswered ? 'disabled' : ''} class="w-full text-left p-3.5 rounded-xl border text-sm sm:text-base font-semibold transition-all duration-200 flex items-center justify-between ${btnStyle}">
+                    <span>(${key.toUpperCase()}) ${optText}</span>
+                    ${isAnswered && key.toLowerCase() === correctAnswerKey.toLowerCase() ? '<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 flex-none"></i>' : ''}
+                    ${isAnswered && selectedOpt === key && key.toLowerCase() !== correctAnswerKey.toLowerCase() ? '<i data-lucide="x-circle" class="w-4 h-4 text-rose-600 flex-none"></i>' : ''}
+                </button>`;
+        }).join('');
+
+        let explanationHTML = "";
+        if (isAnswered) {
+            const isCorrect = selectedOpt.toLowerCase() === correctAnswerKey.toLowerCase();
+            explanationHTML = `
+                <div class="mt-3 p-4 rounded-2xl ${isCorrect ? 'bg-emerald-50 border border-emerald-200' : 'bg-rose-50 border border-rose-200'} space-y-1.5 animate-fadeIn">
+                    <div class="flex items-center space-x-1.5 text-xs sm:text-sm font-black ${isCorrect ? 'text-emerald-800' : 'text-rose-800'}">
+                        <i data-lucide="${isCorrect ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i>
+                        <span>${isCorrect ? 'सही उत्तर!' : `गलत उत्तर! सही विकल्प (${correctAnswerKey.toUpperCase()}) है।`}</span>
+                    </div>
+                    <p class="text-xs sm:text-sm font-medium text-slate-800 leading-relaxed pt-1">
+                        <span class="font-bold text-slate-900">व्याख्या:</span> ${q.explanation || "व्याख्या उपलब्ध नहीं है।"}
+                    </p>
+                </div>`;
+        }
+
+        return `
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 mb-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span class="bg-rose-50 text-crimson text-xs font-black px-2.5 py-0.5 rounded-md">प्रश्न संख्या ${qIdx + 1}</span>
+                    ${yearsBadgeHTML}
+                </div>
+                <h3 class="text-sm sm:text-base font-bold text-slate-900 leading-snug">${q.question}</h3>
+                <div class="space-y-2.5 pt-1">${optionsHTML}</div>
+                ${explanationHTML}
+            </div>`;
+    }).join('');
+
+    const pageContent = `
+        <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm space-y-1 mb-3 sticky top-0 z-10">
+            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full">PYQ Chapter Wise Practice</span>
+            <h2 class="text-base font-black text-slate-900">${currentPracticeTitle}</h2>
+        </div>
+        <div class="pb-6">${questionsHTML}</div>`;
+
+    // 🟢 यहाँ `isUpdate` पास होता है, जिससे उत्तर चुनने पर हिस्ट्री स्टैक में नया पेज नहीं जुड़ता
+    openDynamicPage("PYQ Test", pageContent, false, isUpdate);
+}
+
+// 8.9: उत्तर चुनने पर इन-प्लेस री-रेंडर
+window.handlePYQOptionSelect = function(qIdx, optKey) {
+    currentPracticeAnswers[qIdx] = optKey;
+    renderPYQQuizUI(true); // isUpdate = true
+};
