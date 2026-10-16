@@ -1,7 +1,7 @@
 // ==========================================================================
 // SECTION 1: APP CONFIGURATION & GLOBAL STATE
 // ==========================================================================
-const APP_VERSION = "1.3"; // वर्ज़न कंट्रोल
+const APP_VERSION = "1.4"; // वर्ज़न कंट्रोल
 const MASTER_INDEX_URL = "DATA/chapters_index.json"; // मास्टर JSON पाथ
 
 const API_ENDPOINTS = {
@@ -68,7 +68,10 @@ async function loadMasterIndex() {
         console.error("Failed to load chapters_index.json from DATA folder.", e);
     }
 }
-document.addEventListener("DOMContentLoaded", loadMasterIndex);
+document.addEventListener("DOMContentLoaded", () => {
+    loadMasterIndex();               // पहले से मौजूद था - चैप्टर्स लोड करेगा
+    window.applyStudentAuthToUI();   // 🟢 नया जुड़ा - रिफ्रेश होने पर लॉगिन रीस्टोर करेगा
+});
 
 
 // ==========================================================================
@@ -949,6 +952,7 @@ window.submitFinal10thQuiz = function() {
 // SECTION 7: GLOBAL EVENT LISTENERS & ROUTING
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
+    window.applyStudentAuthToUI();
     if (window.lucide) lucide.createIcons();
 
     const sideMenuOverlay = document.getElementById("side-menu-overlay");
@@ -1857,7 +1861,7 @@ if (sidebarClass && studentCls) {
     }
 }
 
-
+    window.applyStudentAuthToUI();
         showToast("🎉 स्वागत है, " + student.name + "! लॉगिन सफल रहा।");
 
         // 7. मोडल बंद करके होम पेज पर स्क्रॉल करें
@@ -2308,4 +2312,79 @@ window.redirectToAboutSir = function() {
 
     // आपके डायनामिक मोडल इंजन से स्क्रीन खुलेगी
     openDynamicPage("राज रौशन सर के बारे में", aboutHtml);
+};
+
+// ==========================================================================
+// 10.🟢 LOCAL AUTH & LOGOUT HANDLER
+// ==========================================================================
+
+// 1. साइडबार UI को अपडेट करने का फ़ंक्शन
+window.applyStudentAuthToUI = function() {
+    const sidebarName = document.getElementById("sidebar-user-name");
+    const sidebarClass = document.getElementById("sidebar-user-class");
+    const logoutBtn = document.getElementById("sidebar-logout-btn");
+    const authBox = document.getElementById("auth-logged-out-box"); // अगर ऊपर लॉगिन/साइनअप बॉक्स है
+
+    // फोन के LocalStorage से डेटा उठाना
+    const saved = localStorage.getItem("current_student");
+    if (saved) {
+        try {
+            currentStudentProfile = JSON.parse(saved);
+        } catch (e) {
+            currentStudentProfile = null;
+        }
+    }
+
+    if (currentStudentProfile && currentStudentProfile.name) {
+        // नाम सेट करें
+        if (sidebarName) sidebarName.innerText = currentStudentProfile.name;
+
+        // क्लास सेट करें
+        const cls = currentStudentProfile.student_class || currentStudentProfile.studentClass;
+        if (sidebarClass) {
+            if (cls === "10" || cls === "9") {
+                sidebarClass.innerText = `Class ${cls}th)`;
+            } else if (cls) {
+                sidebarClass.innerText = `${cls}`;
+            } else {
+                sidebarClass.innerText = "Student Portal";
+            }
+        }
+
+        // मेनू में लॉगआउट बटन दिखाएँ
+        if (logoutBtn) logoutBtn.classList.remove("hidden");
+        // ऊपर का लॉगिन/रजिस्ट्रेशन बॉक्स चाहें तो छुपा दें
+        if (authBox) authBox.classList.add("hidden");
+
+    } else {
+        // जब लॉगआउट हो (डिफ़ॉल्ट स्थिति)
+        if (sidebarName) sidebarName.innerText = "विद्यार्थी पोर्टल";
+        if (sidebarClass) sidebarClass.innerText = "Student Portal (BSEB 9th & 10th)";
+        
+        // लॉगआउट बटन छिपा दें
+        if (logoutBtn) logoutBtn.classList.add("hidden");
+        if (authBox) authBox.classList.remove("hidden");
+    }
+};
+
+// 2. लॉगआउट पर क्लिक होने पर
+window.handleStudentLogout = function() {
+    if (confirm("क्या आप वाकई लॉगआउट करना चाहते हैं?")) {
+        // LocalStorage से डेटा हटाएं
+        localStorage.removeItem("current_student");
+        currentStudentProfile = null;
+
+        // साइडबार बंद करें
+        if (typeof window.closeSideMenuDirect === 'function') {
+            window.closeSideMenuDirect();
+        }
+
+        // साइडबार UI को वापस डिफ़ॉल्ट पर लाएं
+        window.applyStudentAuthToUI();
+
+        // होम पेज के सबसे ऊपर स्क्रॉल करें
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        showToast("आप सफलतापूर्वक लॉगआउट हो चुके हैं!");
+    }
 };
