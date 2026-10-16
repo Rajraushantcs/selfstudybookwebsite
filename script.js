@@ -1,7 +1,7 @@
 // ==========================================================================
 // SECTION 1: APP CONFIGURATION & GLOBAL STATE
 // ==========================================================================
-const APP_VERSION = "1.6"; // वर्ज़न कंट्रोल
+const APP_VERSION = "1.7"; // वर्ज़न कंट्रोल
 const MASTER_INDEX_URL = "DATA/chapters_index.json"; // मास्टर JSON पाथ
 
 const API_ENDPOINTS = {
@@ -71,8 +71,7 @@ async function loadMasterIndex() {
 document.addEventListener("DOMContentLoaded", () => {
     loadMasterIndex();
     window.applyStudentAuthToUI();
-    window.checkPWAInstalledMode();
-    window.safeRenderIcons(); // 🟢 सुरक्षित कॉल
+    window.checkPWAInstalledMode(); // 🟢 यह पेज खुलते ही बटन को चेक करके सही स्टेट में रखेगा
 });
 
 // ==========================================================================
@@ -2433,7 +2432,7 @@ window.handleStudentLogout = function() {
 };
 
 // ==========================================================================
-// 🟢 PWA INSTALLATION & DISPLAY MODE ENGINE (CLEAN & OPTIMIZED)
+// 🟢 PWA DISPLAY & INSTALL CONTROLLER (FIXED & COMPLETE)
 // ==========================================================================
 let deferredPrompt = null;
 
@@ -2441,43 +2440,42 @@ let deferredPrompt = null;
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
-            .then((reg) => console.log("PWA Service Worker Registered Successfully!", reg.scope))
-            .catch((err) => console.log("Service Worker Registration Failed:", err));
+            .catch(err => console.log("SW Error:", err));
     });
 }
 
-// 2. डिस्प्ले मोड चेक (Web App = Blank / Hidden, Normal Chrome = Download Button)
+// 2. डिस्प्ले मोड चेक (Web App = Blank, Normal Chrome = Download Button)
 window.checkPWAInstalledMode = function() {
     const installBtn = document.getElementById("pwa-install-btn");
     if (!installBtn) return;
 
-    // चेक करें कि क्या वेबसाइट standalone (Web App) मोड में खुली है या Safari PWA मोड में है
+    // चेक करें कि क्या सचमुच standalone PWA विंडो के अंदर खुला है
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                         window.navigator.standalone === true;
+                         window.navigator.standalone === true ||
+                         document.referrer.includes('android-app://') ||
+                         window.location.search.includes('source=pwa');
 
     if (isStandalone) {
-        installBtn.style.display = "none"; // ऐप में बटन गायब रहेगा (बिल्कुल खाली जगह)
+        installBtn.style.display = "none"; // ऐप के अंदर खाली रहेगा
     } else {
-        installBtn.style.display = "flex"; // सामान्य क्रोम में बटन दिखेगा
+        installBtn.style.display = "flex"; // सामान्य Chrome में हमेशा दिखेगा
     }
 };
 
-// 3. ब्राउज़र का डिफ़ॉल्ट इंस्टॉल बैनर कैप्चर करें
+// 3. इंस्टॉल प्रॉम्प्ट कैप्चर
 window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault(); // डिफ़ॉल्ट ब्राउज़र बैनर रोकें
+    e.preventDefault();
     deferredPrompt = e;
-    console.log("🟢 App is ready to be installed!");
     window.checkPWAInstalledMode();
 });
 
-// 4. "ऐप डाउनलोड" बटन क्लिक होने पर कॉल होने वाला फ़ंक्शन
+// 4. बटन क्लिक हैंडलर
 window.installPWAApp = async function() {
     if (deferredPrompt) {
-        // डायरेक्ट सिस्टम का 'Add to Home screen' डायलॉग खोलें
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') {
-            showToast("🎉 बधाई! ऐप होम स्क्रीन पर जोड़ा जा रहा है...");
+            showToast("🎉 ऐप होम स्क्रीन पर जोड़ा जा रहा है...");
         }
         deferredPrompt = null;
     } else {
@@ -2492,12 +2490,9 @@ window.installPWAApp = async function() {
     }
 };
 
-// 5. ऐप इंस्टॉल होते ही बटन को तुरंत गायब (Blank) करें
+// 5. इंस्टॉल होने पर
 window.addEventListener('appinstalled', () => {
-    showToast("🎉 SelfStudyBook ऐप होम स्क्रीन पर जुड़ गया है!");
-    const installBtn = document.getElementById("pwa-install-btn");
-    if (installBtn) {
-        installBtn.style.display = "none";
-    }
+    showToast("🎉 ऐप सफलतापूर्वक जुड़ गया!");
     deferredPrompt = null;
+    window.checkPWAInstalledMode();
 });
