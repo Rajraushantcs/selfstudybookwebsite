@@ -1,7 +1,7 @@
 // ==========================================================================
 // SECTION 1: APP CONFIGURATION & GLOBAL STATE
 // ==========================================================================
-const APP_VERSION = "1.7"; // वर्ज़न कंट्रोल
+const APP_VERSION = "1.8"; // वर्ज़न कंट्रोल
 const MASTER_INDEX_URL = "DATA/chapters_index.json"; // मास्टर JSON पाथ
 
 const API_ENDPOINTS = {
@@ -2432,11 +2432,11 @@ window.handleStudentLogout = function() {
 };
 
 // ==========================================================================
-// 🟢 PWA DISPLAY & INSTALL CONTROLLER (FIXED & COMPLETE)
+// 🟢 PWA 1-TAP HOME SCREEN INSTALL ENGINE (FOR STUDENTS)
 // ==========================================================================
 let deferredPrompt = null;
 
-// 1. सर्विस वर्कर रजिस्टर करें
+// 1. Service worker register karein
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
@@ -2444,55 +2444,62 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// 2. डिस्प्ले मोड चेक (Web App = Blank, Normal Chrome = Download Button)
+// 2. Standalone app me button blank (hide) karein
 window.checkPWAInstalledMode = function() {
     const installBtn = document.getElementById("pwa-install-btn");
     if (!installBtn) return;
 
-    // चेक करें कि क्या सचमुच standalone PWA विंडो के अंदर खुला है
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                          window.navigator.standalone === true ||
-                         document.referrer.includes('android-app://') ||
                          window.location.search.includes('source=pwa');
 
     if (isStandalone) {
-        installBtn.style.display = "none"; // ऐप के अंदर खाली रहेगा
+        installBtn.style.display = "none";
     } else {
-        installBtn.style.display = "flex"; // सामान्य Chrome में हमेशा दिखेगा
+        installBtn.style.display = "flex";
     }
 };
 
-// 3. इंस्टॉल प्रॉम्प्ट कैप्चर
+// 3. Browser ka official prompt capture karein
 window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
+    e.preventDefault(); // browser ka default delay banner rokein
+    deferredPrompt = e;  // event store karein taaki 1-click me turant khul sake
     window.checkPWAInstalledMode();
 });
 
-// 4. बटन क्लिक हैंडलर
+// 4. Student ke liye direct 1-tap install function
 window.installPWAApp = async function() {
+    const installBtn = document.getElementById("pwa-install-btn");
+
     if (deferredPrompt) {
+        // Direct mobile screen par 'Add to Home Screen' ka popup kholega
         deferredPrompt.prompt();
+
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') {
-            showToast("🎉 ऐप होम स्क्रीन पर जोड़ा जा रहा है...");
+            showToast("🎉 App Home Screen par jud raha hai...");
+            if (installBtn) {
+                installBtn.innerHTML = `<span>जोड़ा जा रहा है...</span>`;
+            }
         }
         deferredPrompt = null;
     } else {
-        // अगर पहले से इंस्टॉल हो या किसी ब्राउज़र में डायरेक्ट प्रॉम्प्ट न आए
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                             window.navigator.standalone === true;
-        if (isStandalone) {
-            showToast("यह ऐप पहले से आपके मोबाइल में इंस्टॉल है!");
-        } else {
-            alert("होम स्क्रीन पर ऐप जोड़ने के लिए:\n1. ऊपर दाईं ओर 3 बिंदु (⋮) पर क्लिक करें।\n2. 'Add to Home screen' या 'ऐप इंस्टॉल करें' चुनें।");
-        }
+        // Agar prompt capture nahi ho paya ya browser directly allow nahi kar raha
+        showToast("ऐप इंस्टॉल करने के लिए ऊपर 3 बिंदु (⋮) दबाकर 'Install' या 'Add to Home screen' चुनें।");
     }
 };
 
-// 5. इंस्टॉल होने पर
+// 5. Jaise hi install ho jaye, button ko hide kar dein
 window.addEventListener('appinstalled', () => {
-    showToast("🎉 ऐप सफलतापूर्वक जुड़ गया!");
+    showToast("✅ SelfStudyBook App Home Screen par aa gaya hai!");
+    const installBtn = document.getElementById("pwa-install-btn");
+    if (installBtn) {
+        installBtn.style.display = "none";
+    }
     deferredPrompt = null;
+});
+
+// Page load hote hi mode check karein
+document.addEventListener("DOMContentLoaded", () => {
     window.checkPWAInstalledMode();
 });
