@@ -1,7 +1,7 @@
 // ==========================================================================
 // SECTION 1: APP CONFIGURATION & GLOBAL STATE
 // ==========================================================================
-const APP_VERSION = "1.4"; // वर्ज़न कंट्रोल
+const APP_VERSION = "1.5"; // वर्ज़न कंट्रोल
 const MASTER_INDEX_URL = "DATA/chapters_index.json"; // मास्टर JSON पाथ
 
 const API_ENDPOINTS = {
@@ -2388,3 +2388,51 @@ window.handleStudentLogout = function() {
         showToast("आप सफलतापूर्वक लॉगआउट हो चुके हैं!");
     }
 };
+
+// ==========================================================================
+// 🟢 PWA INSTALLATION ENGINE (APP DOWNLOAD CONTROLLER)
+// ==========================================================================
+let deferredPrompt = null;
+
+// 1. सर्विस वर्कर रजिस्टर करें
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(() => console.log("PWA Service Worker Registered Successfully!"))
+            .catch(err => console.log("Service Worker Registration Failed:", err));
+    });
+}
+
+// 2. ब्राउज़र का इंस्टॉल प्रॉम्प्ट कैप्चर करें
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); // डिफ़ॉल्ट बैनर रोकें
+    deferredPrompt = e;
+    console.log("🟢 App is ready to be installed!");
+});
+
+// 3. बटन क्लिक पर कॉल होने वाला फ़ंक्शन
+window.installPWAApp = async function() {
+    if (deferredPrompt) {
+        // अगर ब्राउज़र सपोर्ट करता है तो डायरेक्ट सिस्टम का इंस्टॉल बॉक्स खोलें
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            showToast("🎉 बधाई! ऐप डाउनलोड हो रहा है...");
+        }
+        deferredPrompt = null;
+    } else {
+        // अगर पहले से इंस्टॉल हो या सफारी/कुछ ब्राउज़र में डायरेक्ट प्रॉम्प्ट न आए
+        showToast("ऐप इंस्टॉल करने के लिए ब्राउज़र मेनू (⋮) में जाकर 'Add to Home screen' या 'Install app' चुनें।");
+    }
+};
+
+// 4. ऐप इंस्टॉल हो जाने पर
+window.addEventListener('appinstalled', () => {
+    showToast("✅ SelfStudyBook ऐप सफलतापूर्वक इंस्टॉल हो गया!");
+    deferredPrompt = null;
+    const installBtn = document.getElementById("pwa-install-btn");
+    if (installBtn) {
+        installBtn.innerHTML = `<i class="fa-solid fa-check text-xs"></i> <span>इन्स्टॉल्ड</span>`;
+        installBtn.classList.replace("from-emerald-600", "from-slate-600");
+    }
+});
