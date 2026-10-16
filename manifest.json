@@ -1,24 +1,27 @@
 {
-  "name": "Self Study Book - BSEB 9th & 10th",
+  "id": "com.selfstudybook.app",
+  "name": "SelfStudyBook - Bihar Board 9th & 10th",
   "short_name": "SelfStudyBook",
-  "description": "Bihar Board Class 9th & 10th Guide Books, PYQ & Model Papers by Raj Raushan Sir",
-  "start_url": "/index.html",
+  "description": "Bihar Board 9th & 10th Books, PYQ & Model Sets by Raj Raushan Sir",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#9f1239",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
+  "categories": ["education", "books"],
   "icons": [
     {
       "src": "images/selfstudy_10.webp",
       "sizes": "192x192",
       "type": "image/webp",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "images/selfstudy_10.webp",
       "sizes": "512x512",
       "type": "image/webp",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ]
 }

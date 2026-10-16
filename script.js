@@ -1,7 +1,7 @@
 // ==========================================================================
 // SECTION 1: APP CONFIGURATION & GLOBAL STATE
 // ==========================================================================
-const APP_VERSION = "1.5"; // वर्ज़न कंट्रोल
+const APP_VERSION = "1.6"; // वर्ज़न कंट्रोल
 const MASTER_INDEX_URL = "DATA/chapters_index.json"; // मास्टर JSON पाथ
 
 const API_ENDPOINTS = {
@@ -69,10 +69,11 @@ async function loadMasterIndex() {
     }
 }
 document.addEventListener("DOMContentLoaded", () => {
-    loadMasterIndex();               // पहले से मौजूद था - चैप्टर्स लोड करेगा
-    window.applyStudentAuthToUI();   // 🟢 नया जुड़ा - रिफ्रेश होने पर लॉगिन रीस्टोर करेगा
+    loadMasterIndex();
+    window.applyStudentAuthToUI();
+    window.checkPWAInstalledMode();
+    window.safeRenderIcons(); // 🟢 सुरक्षित कॉल
 });
-
 
 // ==========================================================================
 // SECTION 3: CORE MODAL & SMART NAVIGATION ENGINE (BACK-BUTTON FIX)
@@ -103,6 +104,9 @@ window.openDynamicPage = function(title, htmlContent, isNewFlow = false, isUpdat
         modalHistory[modalHistory.length - 1] = { title, htmlContent };
     } else {
         modalHistory.push({ title, htmlContent });
+        
+        // 🟢 FIX 1: ब्राउज़र की हिस्ट्री में 1 स्टेप जोड़ें ताकि मोबाइल का बैक बटन काम करे
+        history.pushState({ modalOpen: true, stackDepth: modalHistory.length }, "");
     }
     renderCurrentModalState();
 };
@@ -131,16 +135,53 @@ function renderCurrentModalState() {
     if (window.lucide) lucide.createIcons();
 }
 
-// 🟢 स्टेप-बाय-स्टेप 1 स्तर पीछे जाने का ग्लोबल फ़ंक्शन
+// 🟢 FIX 2: जब छात्र ऊपर हेडर वाला "वापस जाएँ (Back)" बटन दबाए
 window.goBackModalStep = function() {
-    if (modalHistory.length > 1) {
-        modalHistory.pop();
-        renderCurrentModalState();
+    if (modalHistory.length > 0) {
+        // यह सीधे ब्राउज़र के बैक को ट्रिगर करेगा
+        history.back();
     } else {
         closeDynamicPage();
     }
 };
 
+window.closeDynamicPage = function() {
+    const dynamicViewModal = document.getElementById("dynamic-view-modal");
+    if (timerInterval9th) clearInterval(timerInterval9th);
+    if (timerInterval10th) clearInterval(timerInterval10th);
+    modalHistory = [];
+    if (dynamicViewModal) {
+        dynamicViewModal.classList.add("hidden");
+        dynamicViewModal.classList.remove("flex");
+    }
+};
+
+// 🟢 FIX 3: मोबाइल के सिस्टम/हार्डवेयर बैक बटन को हैंडल करने वाला लिस्नर
+window.addEventListener("popstate", (e) => {
+    const sideMenuOverlay = document.getElementById("side-menu-overlay");
+    
+    // 1. अगर साइड मेनू खुला हो, तो केवल साइड मेनू बंद करें
+    if (sideMenuOverlay && !sideMenuOverlay.classList.contains("hidden")) {
+        window.closeSideMenuDirect();
+        return;
+    }
+
+    // 2. अगर मोडल 1 से ज़्यादा गहराई में हो (जैसे Subject -> Chapter) तो 1 स्टेप पीछे जाएँ
+    if (modalHistory.length > 1) {
+        modalHistory.pop();
+        renderCurrentModalState();
+    } else if (modalHistory.length === 1) {
+        // 3. अगर अंतिम मोडल खुला हो तो उसे पूरी तरह बंद कर दें और होम पेज दिखाएँ
+        modalHistory.pop();
+        const dynamicViewModal = document.getElementById("dynamic-view-modal");
+        if (timerInterval9th) clearInterval(timerInterval9th);
+        if (timerInterval10th) clearInterval(timerInterval10th);
+        if (dynamicViewModal) {
+            dynamicViewModal.classList.add("hidden");
+            dynamicViewModal.classList.remove("flex");
+        }
+    }
+});
 window.closeDynamicPage = function() {
     const dynamicViewModal = document.getElementById("dynamic-view-modal");
     if (timerInterval9th) clearInterval(timerInterval9th);
@@ -964,8 +1005,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!sideMenuOverlay || !sideMenuContent) return;
         sideMenuOverlay.classList.remove("hidden");
         setTimeout(() => sideMenuContent.classList.remove("-translate-x-full"), 10);
+        
+        // 🟢 यहाँ यह लाइन जोड़ें ताकि साइडबार खुला होने पर भी बैक बटन दबाने से साइडबार बंद हो, ऐप न कटे
+        history.pushState({ sideMenuOpen: true }, "");
     }
-
     window.closeSideMenuDirect = function() {
         if (!sideMenuOverlay || !sideMenuContent) return;
         sideMenuContent.classList.add("-translate-x-full");
@@ -2390,7 +2433,7 @@ window.handleStudentLogout = function() {
 };
 
 // ==========================================================================
-// 🟢 PWA INSTALLATION ENGINE (APP DOWNLOAD CONTROLLER)
+// 🟢 PWA INSTALLATION & DISPLAY MODE ENGINE (CLEAN & OPTIMIZED)
 // ==========================================================================
 let deferredPrompt = null;
 
@@ -2398,41 +2441,63 @@ let deferredPrompt = null;
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
-            .then(() => console.log("PWA Service Worker Registered Successfully!"))
-            .catch(err => console.log("Service Worker Registration Failed:", err));
+            .then((reg) => console.log("PWA Service Worker Registered Successfully!", reg.scope))
+            .catch((err) => console.log("Service Worker Registration Failed:", err));
     });
 }
 
-// 2. ब्राउज़र का इंस्टॉल प्रॉम्प्ट कैप्चर करें
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault(); // डिफ़ॉल्ट बैनर रोकें
-    deferredPrompt = e;
-    console.log("🟢 App is ready to be installed!");
-});
+// 2. डिस्प्ले मोड चेक (Web App = Blank / Hidden, Normal Chrome = Download Button)
+window.checkPWAInstalledMode = function() {
+    const installBtn = document.getElementById("pwa-install-btn");
+    if (!installBtn) return;
 
-// 3. बटन क्लिक पर कॉल होने वाला फ़ंक्शन
-window.installPWAApp = async function() {
-    if (deferredPrompt) {
-        // अगर ब्राउज़र सपोर्ट करता है तो डायरेक्ट सिस्टम का इंस्टॉल बॉक्स खोलें
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            showToast("🎉 बधाई! ऐप डाउनलोड हो रहा है...");
-        }
-        deferredPrompt = null;
+    // चेक करें कि क्या वेबसाइट standalone (Web App) मोड में खुली है या Safari PWA मोड में है
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         window.navigator.standalone === true;
+
+    if (isStandalone) {
+        installBtn.style.display = "none"; // ऐप में बटन गायब रहेगा (बिल्कुल खाली जगह)
     } else {
-        // अगर पहले से इंस्टॉल हो या सफारी/कुछ ब्राउज़र में डायरेक्ट प्रॉम्प्ट न आए
-        showToast("ऐप इंस्टॉल करने के लिए ब्राउज़र मेनू (⋮) में जाकर 'Add to Home screen' या 'Install app' चुनें।");
+        installBtn.style.display = "flex"; // सामान्य क्रोम में बटन दिखेगा
     }
 };
 
-// 4. ऐप इंस्टॉल हो जाने पर
+// 3. ब्राउज़र का डिफ़ॉल्ट इंस्टॉल बैनर कैप्चर करें
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); // डिफ़ॉल्ट ब्राउज़र बैनर रोकें
+    deferredPrompt = e;
+    console.log("🟢 App is ready to be installed!");
+    window.checkPWAInstalledMode();
+});
+
+// 4. "ऐप डाउनलोड" बटन क्लिक होने पर कॉल होने वाला फ़ंक्शन
+window.installPWAApp = async function() {
+    if (deferredPrompt) {
+        // डायरेक्ट सिस्टम का 'Add to Home screen' डायलॉग खोलें
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            showToast("🎉 बधाई! ऐप होम स्क्रीन पर जोड़ा जा रहा है...");
+        }
+        deferredPrompt = null;
+    } else {
+        // अगर पहले से इंस्टॉल हो या किसी ब्राउज़र में डायरेक्ट प्रॉम्प्ट न आए
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                             window.navigator.standalone === true;
+        if (isStandalone) {
+            showToast("यह ऐप पहले से आपके मोबाइल में इंस्टॉल है!");
+        } else {
+            alert("होम स्क्रीन पर ऐप जोड़ने के लिए:\n1. ऊपर दाईं ओर 3 बिंदु (⋮) पर क्लिक करें।\n2. 'Add to Home screen' या 'ऐप इंस्टॉल करें' चुनें।");
+        }
+    }
+};
+
+// 5. ऐप इंस्टॉल होते ही बटन को तुरंत गायब (Blank) करें
 window.addEventListener('appinstalled', () => {
-    showToast("✅ SelfStudyBook ऐप सफलतापूर्वक इंस्टॉल हो गया!");
-    deferredPrompt = null;
+    showToast("🎉 SelfStudyBook ऐप होम स्क्रीन पर जुड़ गया है!");
     const installBtn = document.getElementById("pwa-install-btn");
     if (installBtn) {
-        installBtn.innerHTML = `<i class="fa-solid fa-check text-xs"></i> <span>इन्स्टॉल्ड</span>`;
-        installBtn.classList.replace("from-emerald-600", "from-slate-600");
+        installBtn.style.display = "none";
     }
+    deferredPrompt = null;
 });

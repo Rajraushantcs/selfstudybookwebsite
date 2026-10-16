@@ -96,13 +96,13 @@
         </div>
     </div>
     
-    <!-- 🟢 NEW APP INSTALL BUTTON -->
-    <button id="pwa-install-btn" 
-            onclick="window.installPWAApp()" 
-            class="flex items-center space-x-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs px-3 py-1.5 rounded-full font-black shadow-md shadow-emerald-200 active:scale-95 transition-all cursor-pointer border border-emerald-400/40">
-        <i class="fa-solid fa-download text-xs animate-bounce"></i>
-        <span>Download APP</span>
-    </button>
+    <!-- 🟢 Install App Button (Web App mode में यह अपने आप गायब रहेगा) -->
+<button id="pwa-install-btn" 
+        onclick="window.installPWAApp()"
+        class="flex items-center space-x-1.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs px-3 py-1.5 rounded-full font-extrabold shadow-sm active:scale-95 transition-transform cursor-pointer border border-emerald-400/30">
+    <i class="fa-solid fa-arrow-down-to-bracket text-xs"></i>
+    <span>Download App</span>
+</button>
 </header>
 
     <!-- ==========================================
@@ -498,6 +498,6 @@
    <!-- Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Aapki Updated Script File -->
-    <script src="script.js?v=1.5"></script>
+    <script src="script.js?v=1.6"></script>
 </body>
 </html>
